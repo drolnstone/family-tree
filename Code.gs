@@ -300,6 +300,7 @@ function onOpen() {
     .addItem('Add a person…', 'addPersonPrompt')
     .addItem('Give IDs to any new rows', 'assignMissingIds')
     .addItem('Recalculate generations', 'recalcGenerations')
+    .addItem('Name the family branches…', 'assignBranches')
     .addSeparator()
     .addItem('Check the record for problems', 'validateRecord')
     .addItem('Family statistics', 'showStats')
@@ -415,6 +416,114 @@ function recalcGenerations() {
     if (String(r.Generation) !== String(v)) { t.sheet.getRange(r._row, col).setValue(v); n++; }
   });
   ui_().alert('Generations updated', n + ' row(s) changed.', ui_().ButtonSet.OK);
+}
+
+/**
+ * Menu ▸ Name the family branches.
+ *
+ * Fills in the Branch column for everybody at once. You choose which generation
+ * heads the branches; each person in that generation gives their name to a
+ * branch, and every one of their descendants inherits the label. People above
+ * that generation keep whatever label they already have. Nobody's Person ID,
+ * parentage or any other column is touched.
+ */
+function assignBranches() {
+  const ui = ui_();
+  const t = table_('PEOPLE');
+  const col = t.header.indexOf('Branch') + 1;
+  if (!col) throw new Error('The PEOPLE sheet has no Branch column.');
+
+  const byId = {}, kids = {};
+  t.rows.forEach(function (r) { if (r.PersonID) byId[r.PersonID] = r; });
+  t.rows.forEach(function (r) {
+    [r.FatherID, r.MotherID].forEach(function (p) {
+      if (p && byId[p]) (kids[p] = kids[p] || []).push(r.PersonID);
+    });
+  });
+
+  // Work out generations from the data rather than trusting the column.
+  const gen = {};
+  t.rows.forEach(function (r) {
+    if (!((r.FatherID && byId[r.FatherID]) || (r.MotherID && byId[r.MotherID]))) gen[r.PersonID] = 1;
+  });
+  for (var pass = 0; pass < t.rows.length + 2; pass++) {
+    var changed = false;
+    t.rows.forEach(function (r) {
+      const ps = [r.FatherID, r.MotherID].filter(function (p) { return p && gen[p]; });
+      if (!ps.length) return;
+      const want = Math.max.apply(null, ps.map(function (p) { return gen[p]; })) + 1;
+      if (gen[r.PersonID] !== want) { gen[r.PersonID] = want; changed = true; }
+    });
+    if (!changed) break;
+  }
+
+  const deepest = Math.max.apply(null, t.rows.map(function (r) { return gen[r.PersonID] || 1; }));
+  const ask = ui.prompt('Name the family branches',
+    'Each person in the generation you choose gives their name to a branch, and all of their\n' +
+    'descendants get that label.\n\n' +
+    'Generation 2 is usual — the children of the earliest known ancestor.\n' +
+    'Choose 3 for finer branches. Your tree currently runs to generation ' + deepest + '.\n\n' +
+    'Which generation heads the branches?', ui.ButtonSet.OK_CANCEL);
+  if (ask.getSelectedButton() !== ui.Button.OK) return;
+
+  const level = parseInt(ask.getResponseText().trim() || '2', 10);
+  if (isNaN(level) || level < 2) { ui.alert('Please give a generation of 2 or more.'); return; }
+
+  const heads = t.rows.filter(function (r) { return gen[r.PersonID] === level; });
+  if (!heads.length) {
+    ui.alert('Nobody is in generation ' + level + '.',
+      'Run Family Tree ▸ Recalculate generations first, then try again.', ui.ButtonSet.OK);
+    return;
+  }
+
+  // Give every head and its descendants a label. First claim wins, so a person
+  // who descends from two heads keeps the earlier one rather than flickering.
+  const label = {};
+  heads.forEach(function (h) {
+    const nm = (h.DisplayName || h.FullName || h.PersonID).trim();
+    const text = /branch$/i.test(nm) ? nm : nm + ' Branch';
+    const queue = [h.PersonID];
+    while (queue.length) {
+      const cur = queue.shift();
+      if (label[cur]) continue;
+      label[cur] = text;
+      (kids[cur] || []).forEach(function (k) { if (!label[k]) queue.push(k); });
+    }
+  });
+
+  // Married-in spouses have no parents on record, so take their partner's branch.
+  table_('RELATIONSHIPS').rows.forEach(function (r) {
+    if (!/spouse|partner|married/i.test(r.Type || '')) return;
+    [[r.Person1ID, r.Person2ID], [r.Person2ID, r.Person1ID]].forEach(function (pair) {
+      if (byId[pair[0]] && !label[pair[0]] && label[pair[1]]) label[pair[0]] = label[pair[1]];
+    });
+  });
+
+  var written = 0, kept = 0, blank = 0;
+  t.rows.forEach(function (r) {
+    if (!r.PersonID) return;
+    if (label[r.PersonID]) {
+      if (String(r.Branch) !== label[r.PersonID]) {
+        t.sheet.getRange(r._row, col).setValue(label[r.PersonID]);
+        written++;
+      }
+    } else if (gen[r.PersonID] && gen[r.PersonID] < level) {
+      if (!String(r.Branch).trim()) {
+        t.sheet.getRange(r._row, col).setValue('Founding generation');
+        written++;
+      } else kept++;
+    } else blank++;
+  });
+
+  const names = heads.map(function (h) {
+    const nm = (h.DisplayName || h.PersonID).trim();
+    return '  ' + (/branch$/i.test(nm) ? nm : nm + ' Branch');
+  });
+  ui.alert('Branches named',
+    names.length + ' branch(es) created from generation ' + level + ':\n' + names.join('\n') + '\n\n' +
+    written + ' row(s) updated' + (kept ? ', ' + kept + ' existing label(s) left alone' : '') +
+    (blank ? ', ' + blank + ' person(s) not connected to any branch yet' : '') + '.\n\n' +
+    'Reload the website to see them.', ui.ButtonSet.OK);
 }
 
 /** Menu ▸ Check the record for problems. */

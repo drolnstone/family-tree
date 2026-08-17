@@ -621,12 +621,36 @@ function span(a,b){ a=(a||"").trim(); b=(b||"").trim(); return a&&b ? `${a}–${
 /* ══ VIEWS ═════════════════════════════════════════════════════════════ */
 const app = () => document.getElementById("app");
 
+/**
+ * Group people into branches. Explicit Branch labels win; if the column has not
+ * been filled in, the branches are worked out from the tree itself so the home
+ * page is useful either way.
+ */
+function branchGroups(people){
+  const byLabel = {};
+  people.forEach(p => { const b=(p.Branch||"").trim(); if(b) (byLabel[b]=byLabel[b]||[]).push(p); });
+  const labels = Object.keys(byLabel);
+  const earliest = list => list.slice().sort((x,y)=>(+x.Generation||99)-(+y.Generation||99))[0];
+
+  if(labels.length >= 2){
+    return {derived:false, groups: labels
+      .map(b => ({title:b, list:byLabel[b], head:earliest(byLabel[b])}))
+      .sort((a,b)=>b.list.length-a.list.length)};
+  }
+
+  const root = P(setting("root_person_id","")) ? setting("root_person_id") : rootMost();
+  const groups = kids(root).map(id => {
+    const head = P(id);
+    const list = [head, ...[...descendantSet(id)].map(P).filter(Boolean)];
+    return {title:`${name(head)}’s line`, list, head};
+  }).filter(g => g.head).sort((a,b)=>b.list.length-a.list.length);
+  return {derived:true, groups};
+}
+
 function viewHome(){
   const people = Object.values(IX.byId);
   const gens = people.map(p=>+p.Generation).filter(n=>!isNaN(n));
-  const branches = {};
-  people.forEach(p => { const b=(p.Branch||"Unassigned").trim(); (branches[b]=branches[b]||[]).push(p); });
-  const named = people.filter(p => !/^unknown|^sibling \d|^your child/i.test(name(p))).length;
+  const bg = branchGroups(people);
   const photos = approved(DB.PHOTOS||[]).length;
   const stories = approved(DB.STORIES||[]).length;
 
@@ -644,26 +668,25 @@ function viewHome(){
   <div class="stats">
     ${stat(people.length,"people recorded")}
     ${stat(gens.length?Math.max(...gens):0,"generations")}
-    ${stat(Object.keys(branches).length,"branches")}
+    ${stat(bg.groups.length,"branches")}
     ${stat(stories,"stories")}
     ${stat(photos,"photographs")}
   </div>
 
-  ${people.length ? `<div style="margin-top:34px">
+  ${bg.groups.length >= 2 ? `<div style="margin-top:34px">
     <div class="sechead"><h2>The branches</h2><div class="rule"></div></div>
     <div class="branchgrid">
-      ${Object.entries(branches).sort((a,b)=>b[1].length-a[1].length).map(([b,list])=>{
-        const head = list.slice().sort((x,y)=>(+x.Generation||99)-(+y.Generation||99))[0];
-        return `<a class="card pad pcard" href="#/tree?root=${encodeURIComponent(head.PersonID)}" style="align-items:flex-start; text-align:left">
+      ${bg.groups.map(g =>
+        `<a class="card pad pcard" href="#/tree?root=${encodeURIComponent(g.head.PersonID)}" style="align-items:flex-start; text-align:left">
           <div style="display:flex; gap:11px; align-items:center; width:100%">
-            ${avatar(head)}
+            ${avatar(g.head)}
             <div style="min-width:0">
-              <div class="nm">${esc(b)}</div>
-              <div class="small muted">${list.length} ${list.length===1?"person":"people"} · from ${esc(name(head))}</div>
+              <div class="nm">${esc(g.title)}</div>
+              <div class="small muted">${g.list.length} ${g.list.length===1?"person":"people"}${
+                bg.derived ? "" : ` · from ${esc(name(g.head))}`}</div>
             </div>
           </div>
-        </a>`;
-      }).join("")}
+        </a>`).join("")}
     </div>
   </div>` : ""}
 
@@ -701,7 +724,33 @@ function sourceNote(){
 }
 
 /* ── tree ───────────────────────────────────────────────────────────── */
-const TREE = {root:null, mode:"chart", zoom:1, collapsed:new Set(), depth:99};
+const TREE = {root:null, mode:"chart", modeSet:false, zoom:1, collapsed:new Set(), depth:0, appliedKey:null};
+
+/** Collapse every node deep enough that only `depth` generations remain visible. */
+function collapseBeyond(depth){
+  const set = new Set();
+  (function walk(id, d, seen){
+    if(seen.has(id)) return;
+    seen = new Set(seen); seen.add(id);
+    const ch = kids(id).filter(k => !seen.has(k));
+    if(!ch.length) return;
+    if(d >= depth-1){ set.add(id); return; }   // hide this person's children
+    ch.forEach(k => walk(k, d+1, seen));
+  })(TREE.root, 0, new Set());
+  return set;
+}
+
+/** How many generations hang below a person. */
+function treeDepth(id){
+  var max = 1;
+  (function walk(x, d, seen){
+    if(seen.has(x)) return;
+    seen = new Set(seen); seen.add(x);
+    max = Math.max(max, d);
+    kids(x).filter(k=>!seen.has(k)).forEach(k => walk(k, d+1, seen));
+  })(id, 1, new Set());
+  return max;
+}
 
 function viewTree(params){
   const people = Object.values(IX.byId);
@@ -709,12 +758,25 @@ function viewTree(params){
   const wanted = params.get("root") || TREE.root || setting("root_person_id","");
   TREE.root = P(wanted) ? wanted : rootMost();
 
+  // A big tree squeezed to fit becomes unreadable, so show the top few
+  // generations by default and let people open the rest.
+  const size = descendantSet(TREE.root).size + 1;
+  const deepest = treeDepth(TREE.root);
+  if(!TREE.depth) TREE.depth = size > 25 ? 3 : 99;
+  if(!TREE.modeSet && innerWidth < 720) TREE.mode = "outline";
+
+  const key = TREE.root + "|" + TREE.depth;
+  if(TREE.appliedKey !== key){ TREE.collapsed = collapseBeyond(TREE.depth); TREE.appliedKey = key; }
+
   app().innerHTML = `
     <div class="treebar noprint">
       <label class="small muted" for="rootSel">Start from</label>
       <select id="rootSel">${people.slice().sort((a,b)=>(+a.Generation||99)-(+b.Generation||99) || name(a).localeCompare(name(b)))
         .map(p=>`<option value="${esc(p.PersonID)}" ${p.PersonID===TREE.root?"selected":""}>${esc(name(p))}${p.Generation?` · gen ${esc(p.Generation)}`:""}</option>`).join("")}</select>
       <button class="btn sm" id="upBtn" ${parentsOf(P(TREE.root)).length?"":"disabled"}>↑ Up a generation</button>
+      ${deepest > 3 ? `<label class="small muted" for="depthSel">Show</label>
+        <select id="depthSel">${[3,4,5,6,99].filter(d=>d<=deepest||d===99).map(d=>
+          `<option value="${d}" ${TREE.depth===d?"selected":""}>${d===99?"every generation":d+" generations"}</option>`).join("")}</select>` : ""}
       <span style="flex:1"></span>
       <button class="btn sm" id="modeBtn">${TREE.mode==="chart"?"Outline view":"Chart view"}</button>
       <button class="btn sm" id="expandBtn">Expand all</button>
@@ -732,10 +794,16 @@ function viewTree(params){
   document.getElementById("upBtn").onclick = () => {
     const ps=parentsOf(P(TREE.root)); if(ps.length) location.hash = `#/tree?root=${encodeURIComponent(ps[0])}`;
   };
-  document.getElementById("modeBtn").onclick = () => { TREE.mode = TREE.mode==="chart"?"outline":"chart"; viewTree(params); };
-  document.getElementById("expandBtn").onclick = () => { TREE.collapsed.clear(); drawTree(true); };
+  const ds = document.getElementById("depthSel");
+  if(ds) ds.onchange = e => { TREE.depth = +e.target.value; viewTree(params); };
+  document.getElementById("modeBtn").onclick = () => {
+    TREE.mode = TREE.mode==="chart"?"outline":"chart"; TREE.modeSet = true; viewTree(params);
+  };
+  document.getElementById("expandBtn").onclick = () => {
+    TREE.depth = 99; TREE.appliedKey = TREE.root + "|99"; TREE.collapsed.clear(); viewTree(params);
+  };
   document.getElementById("collapseBtn").onclick = () => {
-    TREE.collapsed = new Set([...descendantSet(TREE.root)].filter(id=>kids(id).length));
+    TREE.collapsed = new Set([...descendantSet(TREE.root), TREE.root].filter(id=>kids(id).length));
     drawTree(true);
   };
   const zi=document.getElementById("zoomIn"), zo=document.getElementById("zoomOut"), fb=document.getElementById("fitBtn");
@@ -766,7 +834,9 @@ function fitTree(){
   sc.style.width="100%"; sc.style.transform="none";
   const need = sc.firstElementChild.offsetWidth;
   const have = vp.clientWidth - 40;
-  TREE.zoom = Math.max(.25, Math.min(1, have/need));
+  // Never shrink below the point where names stop being readable — scrolling a
+  // legible tree beats squinting at a whole one.
+  TREE.zoom = Math.max(.45, Math.min(1, have/need));
   applyZoom();
   void sc.offsetWidth;                              // flush layout before re-arming the transition
   sc.style.transition="";
