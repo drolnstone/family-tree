@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="build" content="2026-08-17-1905">
 <title>Odikom Family Tree</title>
 <meta name="description" content="A living record of the Odikom family — ancestry, relationships, places, professions and stories, preserved for the generations still to come.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext y='26' font-size='26'%3E%F0%9F%8C%B3%3C/text%3E%3C/svg%3E">
@@ -273,6 +274,13 @@ mark{background:var(--accent-wash); color:var(--accent-ink); border-radius:3px; 
 .spin{width:26px;height:26px;border:2px solid var(--rule); border-top-color:var(--green); border-radius:50%; animation:sp .8s linear infinite}
 @keyframes sp{to{transform:rotate(360deg)}}
 .src{font-size:.76rem; color:var(--ink-3); text-align:center; padding:22px 0 0}
+.updatebar{
+  position:fixed; left:50%; bottom:16px; transform:translateX(-50%); z-index:80;
+  display:flex; align-items:center; gap:12px; padding:9px 10px 9px 16px; border-radius:99px;
+  background:var(--card); border:1px solid var(--rule); box-shadow:var(--shadow);
+  font-size:.88rem; max-width:calc(100vw - 28px);
+}
+.updatebar[hidden]{display:none}
 footer.site{border-top:1px solid var(--rule); padding:24px 0 40px; color:var(--ink-3); font-size:.84rem}
 .lightbox{
   position:fixed; inset:0; z-index:100; background:rgba(10,12,11,.9); display:grid; place-items:center; padding:22px;
@@ -333,6 +341,11 @@ footer.site{border-top:1px solid var(--rule); padding:24px 0 40px; color:var(--i
   <div class="loading"><div class="spin"></div><p>Opening the family record…</p></div>
 </main>
 
+<div class="updatebar" id="updateBar" hidden>
+  <span>An updated version of this page is available.</span>
+  <button class="btn sm" id="refreshBtn">Refresh</button>
+</div>
+
 <footer class="site">
   <div class="wrap">
     <p id="footNote">Build Once. Grow Forever.</p>
@@ -383,8 +396,11 @@ function toObjects(rows){
 }
 
 /* ── loading ────────────────────────────────────────────────────────── */
+// The stamp defeats any cache sitting between the browser and Google, on top of
+// the no-store below. Family data changes daily; it must never come from a cache.
 const gvizURL = tab =>
-  `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=out:csv&headers=1&sheet=${encodeURIComponent(tab)}`;
+  `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=out:csv&headers=1` +
+  `&sheet=${encodeURIComponent(tab)}&_=${Date.now()}`;
 
 async function loadFromSheet(){
   const results = await Promise.all(CONFIG.TABS.map(async tab => {
@@ -1407,6 +1423,7 @@ function viewAdmin(){
       : SOURCE==="script" ? "the Apps Script backend"
       : "the built-in fallback copy — the live spreadsheet could not be reached"}.
     ${sheetId ? `<a href="https://docs.google.com/spreadsheets/d/${esc(sheetId)}/edit" target="_blank" rel="noopener">Open the spreadsheet ↗</a>` : ""}
+    <br>Build <code>${esc(BUILD)}</code> — if this is not the version you last uploaded, your browser is showing a cached copy.
   </p>
 
   <div class="stats" style="margin-bottom:26px">
@@ -1485,6 +1502,32 @@ function route(){
   document.title = (p ? `${name(p)} · ` : "") + setting("site_title","Odikom Family Tree");
 }
 
+/* ── staying current ────────────────────────────────────────────────
+   GitHub Pages sends Cache-Control: max-age=600 and gives no way to change
+   it, so a visitor who loaded the site in the last ten minutes keeps the old
+   copy — and a phone that has kept the tab open can hold one far longer.
+   There are no separate CSS or JS files to fingerprint with ?v=, so instead
+   the page carries a build stamp and checks whether a newer one exists.     */
+
+const BUILD = document.querySelector('meta[name=build]')?.content || "dev";
+let lastCheck = 0;
+
+async function checkForUpdate(){
+  if(Date.now() - lastCheck < 60000) return;
+  lastCheck = Date.now();
+  try{
+    // cache:"reload" bypasses the stale copy AND replaces it, so the plain
+    // location.reload() below then picks up the new version.
+    const r = await fetch(location.href.split("#")[0], {cache:"reload"});
+    if(!r.ok) return;
+    const m = (await r.text()).match(/<meta name="build" content="([^"]+)"/);
+    if(m && m[1] && m[1] !== BUILD){
+      const bar = document.getElementById("updateBar");
+      if(bar) bar.hidden = false;
+    }
+  }catch(e){ /* offline, or opened from a file — nothing to do */ }
+}
+
 /* ── boot ───────────────────────────────────────────────────────────── */
 document.getElementById("themeBtn").onclick = () => {
   const now = document.documentElement.getAttribute("data-theme")==="dark" ? "light" : "dark";
@@ -1499,11 +1542,15 @@ if(window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches)
   dropUnapproved();
   readSettings();
   buildIndex();
-  console.info(`Family tree: reading from "${SOURCE}" · ${Object.keys(IX.byId).length} people · worklist at #/admin`);
   document.getElementById("brandText").textContent = setting("site_title","Odikom Family Tree");
   document.getElementById("footNote").textContent = setting("tagline","Build Once. Grow Forever.");
   if(CONFIG.APPS_SCRIPT_URL && isYes(setting("allow_uploads","Yes")))
     document.getElementById("navContribute").hidden = false;
+  console.info(`Odikom Family Tree · build ${BUILD} · source "${SOURCE}" · ${Object.keys(IX.byId).length} people`);
+  document.getElementById("refreshBtn").onclick = () => location.reload();
+  setTimeout(checkForUpdate, 4000);
+  document.addEventListener("visibilitychange", () => { if(!document.hidden) checkForUpdate(); });
+
   window.addEventListener("hashchange", route);
   var rt;
   addEventListener("resize", () => {
