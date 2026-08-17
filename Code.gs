@@ -121,16 +121,21 @@ function doGet(e) {
       const out = {};
       TABS.forEach(function (t) {
         try {
-          out[t] = table_(t).rows.map(function (r) { delete r._row; return r; });
+          var rows = table_(t).rows.map(function (r) { delete r._row; return r; });
+          // Same rule as the website: nothing unapproved leaves this endpoint.
+          if (t === 'PHOTOS' || t === 'STORIES') {
+            rows = rows.filter(function (r) {
+              const st = String(r.ApprovalStatus || '').trim();
+              return !st || /^approved$/i.test(st);
+            });
+          }
+          out[t] = rows;
         } catch (err) { out[t] = []; }
       });
       return json_(out);
     }
     if (action === 'pending') {
-      return json_({
-        photos: table_('PHOTOS').rows.filter(function (r) { return /^pending$/i.test(r.ApprovalStatus); }),
-        stories: table_('STORIES').rows.filter(function (r) { return /^pending$/i.test(r.ApprovalStatus); })
-      });
+      return json_({ waiting: inboxRows_().rows.filter(function (r) { return /^pending$/i.test(r.Status); }) });
     }
   } catch (err) {
     return json_({ ok: false, error: String(err) });
@@ -168,6 +173,51 @@ function doPost(e) {
   }
 }
 
+// ─── The approval inbox ────────────────────────────────────────────────────
+//
+// Submissions from the website land here, NOT in PHOTOS or STORIES.
+//
+// This matters more than it looks. The website reads whole tabs from the
+// published spreadsheet, so anything sitting in PHOTOS or STORIES — even a row
+// marked Pending — is downloaded to every visitor's browser and can be read
+// with developer tools. Keeping unvetted material in a separate sheet that the
+// website never fetches is what makes "nothing appears until you approve it"
+// actually true. INBOX must never be added to the TABS list above.
+
+const INBOX = 'INBOX';
+const INBOX_HEADER = ['When','Kind','PersonID','Person','Title','Body','DriveFileID',
+                      'PhotoDate','Place','Uploader','Status','Published as'];
+
+function inbox_() {
+  var sh = book_().getSheetByName(INBOX);
+  if (!sh) {
+    sh = book_().insertSheet(INBOX);
+    sh.appendRow(INBOX_HEADER);
+    sh.getRange(1, 1, 1, INBOX_HEADER.length)
+      .setFontWeight('bold').setFontColor('#FFFFFF').setBackground('#8C6F4A');
+    sh.setFrozenRows(1);
+    [150, 70, 90, 170, 220, 420, 260, 110, 150, 140, 100, 120]
+      .forEach(function (w, i) { sh.setColumnWidth(i + 1, w); });
+    sh.getRange('F2:F1000').setWrap(true);
+    sh.setTabColor('8C6F4A');
+  }
+  return sh;
+}
+
+function inboxRows_() {
+  const sh = inbox_();
+  const values = sh.getDataRange().getValues();
+  const header = values[0].map(function (h) { return String(h).trim(); });
+  const rows = [];
+  for (var r = 1; r < values.length; r++) {
+    if (values[r].every(function (v) { return String(v).trim() === ''; })) continue;
+    const o = { _row: r + 1 };
+    header.forEach(function (h, i) { o[h] = values[r][i] == null ? '' : String(values[r][i]).trim(); });
+    rows.push(o);
+  }
+  return { sheet: sh, header: header, rows: rows };
+}
+
 function uploadPhoto_(b) {
   if (!b.personId || !b.data) return { ok: false, error: 'Missing person or file.' };
   if (!table_('PEOPLE').rows.some(function (r) { return r.PersonID === b.personId; }))
@@ -193,43 +243,29 @@ function uploadPhoto_(b) {
     // either way; the administrator can share it by hand at approval time.
   }
 
-  const photoId = nextId_('PHOTOS', 'PhotoID', 'F', 3);
-  appendRow_('PHOTOS', {
-    PhotoID: photoId,
-    PersonID: b.personId,
-    DriveFileID: file.getId(),
-    Caption: b.caption || '',
-    PhotoDate: b.photoDate || '',
-    Place: b.place || '',
-    PeopleShown: b.personId,
-    Uploader: b.uploader || 'Anonymous',
-    UploadedAt: new Date().toISOString().slice(0, 19).replace('T', ' '),
-    ApprovalStatus: 'Pending',
-    IsProfile: 'No',
-    Notes: 'Submitted through the website.'
-  });
+  inbox_().appendRow([
+    new Date(), 'Photo', b.personId, personName_(b.personId),
+    b.caption || '', '', file.getId(),
+    b.photoDate || '', b.place || '', b.uploader || 'Anonymous', 'Pending', ''
+  ]);
   notifyAdmin_('New photograph awaiting approval',
     (b.uploader || 'Someone') + ' submitted a photograph for ' + personName_(b.personId) + '.');
-  return { ok: true, photoId: photoId };
+  return { ok: true };
 }
 
 function addStory_(b) {
   if (!b.personId || !b.story) return { ok: false, error: 'Missing person or story.' };
-  const storyId = nextId_('STORIES', 'StoryID', 'S', 3);
-  appendRow_('STORIES', {
-    StoryID: storyId,
-    PersonID: b.personId,
-    Title: b.title || 'Untitled',
-    Story: b.story,
-    ToldBy: b.toldBy || '',
-    RecordedDate: new Date().toISOString().slice(0, 10),
-    Category: b.category || 'Memory',
-    ApprovalStatus: 'Pending',
-    Notes: 'Submitted through the website.'
-  });
+  if (!table_('PEOPLE').rows.some(function (r) { return r.PersonID === b.personId; }))
+    return { ok: false, error: 'Unknown person.' };
+
+  inbox_().appendRow([
+    new Date(), 'Story', b.personId, personName_(b.personId),
+    b.title || 'Untitled', String(b.story).slice(0, 40000), '',
+    '', '', b.toldBy || '', 'Pending', ''
+  ]);
   notifyAdmin_('New story awaiting approval',
     (b.toldBy || 'Someone') + ' shared a story about ' + personName_(b.personId) + '.');
-  return { ok: true, storyId: storyId };
+  return { ok: true };
 }
 
 function addSuggestion_(b) {
@@ -306,6 +342,7 @@ function onOpen() {
     .addItem('Family statistics', 'showStats')
     .addSeparator()
     .addItem('Review the approval queue', 'reviewQueue')
+    .addItem('Move old pending rows into the inbox', 'migratePendingToInbox')
     .addItem('Approve the selected rows', 'approveSelection')
     .addItem('Reject the selected rows', 'rejectSelection')
     .addItem('Make the selected photo the profile photo', 'makeProfilePhoto')
@@ -626,45 +663,142 @@ function showStats() {
 // ─── Approval queue ────────────────────────────────────────────────────────
 
 function reviewQueue() {
-  const photos = table_('PHOTOS').rows.filter(function (r) { return /^pending$/i.test(r.ApprovalStatus); });
-  const stories = table_('STORIES').rows.filter(function (r) { return /^pending$/i.test(r.ApprovalStatus); });
-  if (!photos.length && !stories.length) {
-    ui_().alert('Approval queue', 'Nothing is waiting.', ui_().ButtonSet.OK);
+  const t = inboxRows_();
+  const waiting = t.rows.filter(function (r) { return /^pending$/i.test(r.Status); });
+  const legacy = table_('PHOTOS').rows.filter(function (r) { return /^pending$/i.test(r.ApprovalStatus); }).length
+               + table_('STORIES').rows.filter(function (r) { return /^pending$/i.test(r.ApprovalStatus); }).length;
+
+  const warn = legacy
+    ? '\n\n⚠ ' + legacy + ' older pending row(s) are still sitting in PHOTOS/STORIES, where the\n' +
+      'website downloads them. Run Family Tree ▸ Move old pending rows into the inbox.'
+    : '';
+
+  if (!waiting.length) {
+    ui_().alert('Approval queue', 'Nothing is waiting.' + warn, ui_().ButtonSet.OK);
     return;
   }
+  t.sheet.activate();
   ui_().alert('Approval queue',
-    'Photographs waiting: ' + photos.length + '\n' +
-    (photos.length ? photos.map(function (r) { return '  ' + r.PhotoID + ' · ' + personName_(r.PersonID) + ' · from ' + (r.Uploader || '?'); }).join('\n') + '\n' : '') +
-    '\nStories waiting: ' + stories.length + '\n' +
-    (stories.length ? stories.map(function (r) { return '  ' + r.StoryID + ' · ' + personName_(r.PersonID) + ' · "' + r.Title + '"'; }).join('\n') : '') +
-    '\n\nTo act on one: go to the PHOTOS or STORIES sheet, select the row, then use\n' +
-    'Family Tree ▸ Approve the selected rows.',
+    waiting.length + ' submission(s) waiting:\n\n' +
+    waiting.map(function (r) {
+      return '  row ' + r._row + ' · ' + r.Kind + ' · ' + (r.Person || r.PersonID) +
+             ' · from ' + (r.Uploader || '?') + (r.Title ? ' · "' + r.Title + '"' : '');
+    }).join('\n') +
+    '\n\nRead them on the INBOX sheet, select the rows you want, then use\n' +
+    'Family Tree ▸ Approve the selected rows (or Reject).' + warn,
     ui_().ButtonSet.OK);
 }
 
-function setSelectionStatus_(value) {
+/** Copy one approved inbox row into the public PHOTOS or STORIES sheet. */
+function publishInboxRow_(r) {
+  if (/^photo$/i.test(r.Kind)) {
+    const id = nextId_('PHOTOS', 'PhotoID', 'F', 3);
+    appendRow_('PHOTOS', {
+      PhotoID: id, PersonID: r.PersonID, DriveFileID: r.DriveFileID,
+      Caption: r.Title || '', PhotoDate: r.PhotoDate || '', Place: r.Place || '',
+      PeopleShown: r.PersonID, Uploader: r.Uploader || '', UploadedAt: r.When || '',
+      ApprovalStatus: 'Approved', IsProfile: 'No', Notes: 'Approved from the inbox.'
+    });
+    return id;
+  }
+  const id = nextId_('STORIES', 'StoryID', 'S', 3);
+  appendRow_('STORIES', {
+    StoryID: id, PersonID: r.PersonID, Title: r.Title || 'Untitled', Story: r.Body || '',
+    ToldBy: r.Uploader || '', RecordedDate: String(r.When || '').slice(0, 10),
+    Category: 'Memory', ApprovalStatus: 'Approved', Notes: 'Approved from the inbox.'
+  });
+  return id;
+}
+
+function actOnSelection_(approve) {
   const sh = book_().getActiveSheet();
+  const rng = sh.getActiveRange();
+
+  if (sh.getName() === INBOX) {
+    const t = inboxRows_();
+    const iStatus = t.header.indexOf('Status') + 1;
+    const iPub = t.header.indexOf('Published as') + 1;
+    var done = 0, skipped = 0;
+
+    for (var r = rng.getRow(); r < rng.getRow() + rng.getNumRows(); r++) {
+      if (r === 1) continue;
+      const hit = t.rows.filter(function (x) { return x._row === r; })[0];
+      if (!hit) continue;
+      if (!/^pending$/i.test(hit.Status)) { skipped++; continue; }
+
+      if (approve) {
+        const id = publishInboxRow_(hit);
+        sh.getRange(r, iStatus).setValue('Approved');
+        sh.getRange(r, iPub).setValue(id);
+      } else {
+        sh.getRange(r, iStatus).setValue('Rejected');
+        if (hit.DriveFileID) {
+          try { DriveApp.getFileById(hit.DriveFileID).setTrashed(true); } catch (err) {}
+        }
+      }
+      done++;
+    }
+    ui_().alert(approve ? 'Approved' : 'Rejected',
+      done + ' submission(s) ' + (approve ? 'published to the site' : 'rejected') + '.' +
+      (skipped ? '\n' + skipped + ' row(s) skipped — they had already been dealt with.' : '') +
+      (approve && done ? '\n\nReload the website to see them.' : ''),
+      ui_().ButtonSet.OK);
+    return;
+  }
+
+  // Rows you entered by hand on PHOTOS or STORIES.
   const nm = sh.getName();
   if (nm !== 'PHOTOS' && nm !== 'STORIES') {
-    ui_().alert('Select rows on the PHOTOS or STORIES sheet first.');
+    ui_().alert('Select rows on the INBOX sheet first.',
+      'Family Tree ▸ Review the approval queue will take you there.', ui_().ButtonSet.OK);
     return;
   }
   const header = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0]
     .map(function (h) { return String(h).trim(); });
   const col = header.indexOf('ApprovalStatus') + 1;
   if (!col) { ui_().alert('That sheet has no ApprovalStatus column.'); return; }
-
-  const rng = sh.getActiveRange();
   var n = 0;
-  for (var r = rng.getRow(); r < rng.getRow() + rng.getNumRows(); r++) {
-    if (r === 1) continue;
-    sh.getRange(r, col).setValue(value);
+  for (var q = rng.getRow(); q < rng.getRow() + rng.getNumRows(); q++) {
+    if (q === 1) continue;
+    sh.getRange(q, col).setValue(approve ? 'Approved' : 'Rejected');
     n++;
   }
-  ui_().alert(value, n + ' row(s) set to ' + value + '.', ui_().ButtonSet.OK);
+  ui_().alert(approve ? 'Approved' : 'Rejected', n + ' row(s) updated.', ui_().ButtonSet.OK);
 }
-function approveSelection() { setSelectionStatus_('Approved'); }
-function rejectSelection()  { setSelectionStatus_('Rejected'); }
+function approveSelection() { actOnSelection_(true); }
+function rejectSelection()  { actOnSelection_(false); }
+
+/**
+ * Menu ▸ Move old pending rows into the inbox.
+ * One-off tidy-up for anything submitted before the inbox existed. Pending rows
+ * in PHOTOS/STORIES are visible to every website visitor; this gets them out.
+ */
+function migratePendingToInbox() {
+  const box = inbox_();
+  var moved = 0;
+
+  [['PHOTOS', 'Photo'], ['STORIES', 'Story']].forEach(function (spec) {
+    const t = table_(spec[0]);
+    const pending = t.rows.filter(function (r) { return /^pending$/i.test(r.ApprovalStatus); });
+    // Delete from the bottom up so earlier row numbers stay valid.
+    pending.sort(function (a, b) { return b._row - a._row; }).forEach(function (r) {
+      box.appendRow([
+        r.UploadedAt || r.RecordedDate || new Date(), spec[1], r.PersonID, personName_(r.PersonID),
+        r.Caption || r.Title || '', r.Story || '', r.DriveFileID || '',
+        r.PhotoDate || '', r.Place || '', r.Uploader || r.ToldBy || '', 'Pending', ''
+      ]);
+      t.sheet.deleteRow(r._row);
+      moved++;
+    });
+  });
+
+  ui_().alert(moved ? 'Moved to the inbox' : 'Nothing to move',
+    moved
+      ? moved + ' pending row(s) moved out of the public sheets and into INBOX.\n\n' +
+        'They are no longer downloaded by visitors. Review them there as usual.'
+      : 'No pending rows were left in PHOTOS or STORIES. Nothing needed moving.',
+    ui_().ButtonSet.OK);
+}
 
 /** Menu ▸ Make the selected photo the profile photo. */
 function makeProfilePhoto() {

@@ -9,7 +9,6 @@
 
 <!-- ═══════════════════════════════════════════════════════════════════════
      CONFIGURATION  —  the only part of this file you need to edit.
-     Full instructions are in SETUP.md.
      ═══════════════════════════════════════════════════════════════════ -->
 <script>
 const CONFIG = {
@@ -411,6 +410,26 @@ async function loadFromScript(){
   SOURCE = "script";
 }
 
+/**
+ * Anything not approved is discarded the moment it arrives, so unvetted text
+ * never reaches the rendered page. Only the count is kept, for the worklist.
+ * (The real guard is on the spreadsheet side: submissions land in an INBOX
+ * sheet the website never reads at all.)
+ */
+let PENDING = 0;
+function dropUnapproved(){
+  PENDING = 0;
+  ["PHOTOS","STORIES"].forEach(t => {
+    const keep = [];
+    (DB[t] || []).forEach(r => {
+      const st = (r.ApprovalStatus || "").trim();
+      if(!st || /^approved$/i.test(st)) keep.push(r);
+      else if(/^pending$/i.test(st)) PENDING++;
+    });
+    DB[t] = keep;
+  });
+}
+
 function loadSeed(){
   CONFIG.TABS.forEach(t => DB[t] = (SEED[t] || []).map(o => ({...o})));
   SOURCE = "sample";
@@ -690,38 +709,27 @@ function viewHome(){
     </div>
   </div>` : ""}
 
-  <div style="margin-top:34px" class="cols">
+  ${canContribute() ? `<div style="margin-top:34px">
     <section class="card pad">
-      <div class="sechead"><h2>Adding to the record</h2><div class="rule"></div></div>
-      <p class="small">This website never needs editing. It reads the family spreadsheet every time it loads.</p>
-      <ol class="small" style="padding-left:18px; margin:12px 0 0">
-        <li>Open the spreadsheet and add a row to <b>PEOPLE</b>.</li>
-        <li>Give the person the next free Person ID.</li>
-        <li>Put their father's and mother's IDs in <b>FatherID</b> and <b>MotherID</b>.</li>
-        <li>Refresh this page. They will be in the tree, with siblings, cousins and descendants worked out for you.</li>
-      </ol>
-      <p class="small muted" style="margin-top:12px">Leave anything you do not know blank. Never invent a detail to fill a gap.</p>
+      <div class="sechead"><h2>Can you add to this?</h2><div class="rule"></div></div>
+      <p style="margin:0; color:var(--ink-2)">A photograph in a drawer, a date, the village someone came from,
+      a trade they practised, a name we have not recovered yet — it all belongs here. If you remember something
+      that is missing, please send it.</p>
+      <p style="margin:16px 0 0; display:flex; gap:10px; flex-wrap:wrap">
+        ${uploadsOpen() ? `<a class="btn primary" href="#/contribute">Send a photograph or a story</a>` : ""}
+        ${setting("contact_email") ? `<a class="btn" href="mailto:${esc(setting("contact_email"))}">Get in touch</a>` : ""}
+      </p>
     </section>
-    <section class="card pad">
-      <div class="sechead"><h2>Still to recover</h2><div class="rule"></div></div>
-      ${(() => {
-        const unknown = people.filter(p => /name unknown/i.test(p.Status||"") || /^unknown/i.test(name(p)));
-        if(!unknown.length) return `<p class="small muted">Every person on record has a name. Remarkable.</p>`;
-        return `<p class="small">${unknown.length} ${unknown.length===1?"person is":"people are"} recorded without a name.
-          If an elder can supply one, the record can simply be updated — the Person ID never changes.</p>
-          <div class="plist" style="margin-top:12px">${unknown.slice(0,8).map(p=>personChip(p.PersonID,"")).join("")}</div>`;
-      })()}
-    </section>
-  </div>
-  ${sourceNote()}`;
+  </div>` : ""}`;
 }
 const stat = (n,l) => `<div class="card stat"><b>${n}</b><span>${esc(l)}</span></div>`;
 
-function sourceNote(){
-  if(SOURCE==="sheet") return "";
-  if(SOURCE==="script") return `<p class="src">Reading from the Apps Script backend.</p>`;
-  return `<p class="src">Showing the built-in sample family. Add your Sheet ID to <code>index.html</code> to read live data — see SETUP.md.</p>`;
-}
+const uploadsOpen = () => !!CONFIG.APPS_SCRIPT_URL && isYes(setting("allow_uploads","Yes"));
+const canContribute = () => uploadsOpen() || !!setting("contact_email");
+
+/* Where the data came from is a maintenance detail, not something visitors
+   need to read. It goes to the browser console and the unlisted admin page. */
+function sourceNote(){ return ""; }
 
 /* ── tree ───────────────────────────────────────────────────────────── */
 const TREE = {root:null, mode:"chart", modeSet:false, zoom:1, collapsed:new Set(), depth:0, appliedKey:null};
@@ -977,7 +985,8 @@ function viewPerson(id){
     ${f.Caption?`<figcaption>${esc(f.Caption)}${f.PhotoDate?` <span class="muted">· ${esc(f.PhotoDate)}</span>`:""}</figcaption>`:""}</figure>`).join("")}</div>`);
 
   if(!left) left = `<section class="card pad"><p class="muted">Nothing has been recorded about this person's life yet — only their place in the family.
-    ${lim?"Details of living relatives are kept off the public site.":"When the family can supply dates, places, work, schooling, photographs or stories, they belong in the spreadsheet and will appear here."}</p></section>`;
+    ${lim ? "Details of living relatives are kept off this site."
+          : (canContribute() ? `If you remember anything about them, please <a href="#/contribute">add it to the archive</a>.` : "")}</p></section>`;
 
   /* right column */
   const fam = [
@@ -1004,7 +1013,6 @@ function viewPerson(id){
       ${p.Branch?`<dt>Branch</dt><dd>${esc(p.Branch)}</dd>`:""}
       ${p.Generation?`<dt>Generation</dt><dd>${esc(p.Generation)}</dd>`:""}
       <dt>Descendants</dt><dd>${desc.size}</dd>
-      <dt>Person ID</dt><dd><code>${esc(p.PersonID)}</code></dd>
     </dl>
     <p style="margin-top:14px"><a class="btn sm" href="#/tree?root=${encodeURIComponent(id)}">See their descendants</a></p>`)}
     ${section("How am I related?", `<p class="small muted">Pick anyone to see how they connect to ${esc(name(p))}.</p>${relSel}${relOut}`)}
@@ -1022,7 +1030,8 @@ function viewPerson(id){
         <h1>${esc(name(p))}</h1>
         <p class="muted" style="margin:0">${esc([lifespan(p), p.Branch].filter(Boolean).join(" · ")) || "&nbsp;"}</p>
         <div class="metaline">
-          ${p.Status?`<span class="chip ${statusClass(p.Status)}">${esc(p.Status)}</span>`:""}
+          ${/^(confirmed|reported) by family$/i.test((p.Status||"").trim())
+              ? `<span class="chip ${statusClass(p.Status)}">${esc(p.Status.trim())}</span>` : ""}
           ${p.Generation?`<span class="chip">Generation ${esc(p.Generation)}</span>`:""}
           ${lim?`<span class="chip">Details withheld — living</span>`:""}
         </div>
@@ -1150,23 +1159,25 @@ function viewStories(){
         <div class="by">${[s.ToldBy?`Told by ${s.ToldBy}`:"", s.RecordedDate?`Recorded ${s.RecordedDate}`:"", s.Category].filter(Boolean).join(" · ")}</div></div>
       </article>`;
     }).join("")
-    : `<div class="card pad"><p class="muted">No stories have been recorded yet. This is usually the most valuable and most
-       perishable part of a family archive — it is worth starting before it is lost.</p></div>`}`;
+    : `<div class="card pad"><p class="muted">No stories have been recorded yet. Memories are the part of a family record
+       that cannot be recovered later.${canContribute()
+         ? ` If you have one to tell, please <a href="#/contribute">set it down here</a>.` : ""}</p></div>`}`;
 }
 
 function viewGallery(){
   const list = approved(DB.PHOTOS||[]).filter(f=>(f.DriveFileID||"").trim());
   app().innerHTML = `
     <h1 style="margin-bottom:6px">Family photographs</h1>
-    <p class="muted" style="margin-top:0">${list.length} approved ${list.length===1?"photograph":"photographs"}. Images are held in Google Drive, never in the public code repository.</p>
+    <p class="muted" style="margin-top:0">${list.length} ${list.length===1?"photograph":"photographs"} in the family album.</p>
     ${list.length ? `<div class="gal">${list.map(f=>{
       const p=P(f.PersonID);
       return `<figure><img src="${esc(driveURL(f.DriveFileID,700))}" alt="${esc(f.Caption||"")}" loading="lazy"
         data-full="${esc(driveURL(f.DriveFileID,1600))}" data-cap="${esc(f.Caption||"")}" style="cursor:zoom-in">
         <figcaption>${esc(f.Caption||"")}${p?`<br><a href="#/person/${encodeURIComponent(p.PersonID)}">${esc(name(p))}</a>`:""}</figcaption></figure>`;
     }).join("")}</div>` :
-    `<div class="card pad"><p class="muted">No photographs yet. Every person shows a silhouette until a real photograph is
-      supplied and approved — the silhouettes are placeholders, not gaps.</p></div>`}`;
+    `<div class="card pad"><p class="muted">No photographs yet. Everyone shows a silhouette until a real photograph is
+      found — the silhouettes are placeholders, not gaps.${canContribute()
+        ? ` If you have old family photographs, please <a href="#/contribute">share them</a>.` : ""}</p></div>`}`;
   app().querySelectorAll("[data-full]").forEach(img => img.onclick = () => lightbox(img.dataset.full, img.dataset.cap));
 }
 
@@ -1242,6 +1253,97 @@ async function post(payload){
   }catch(e){ console.error(e); return false; }
 }
 
+/* ── admin worklist (unlisted: reachable only at #/admin) ────────────
+   Not linked from anywhere and not in the menu. It is not secured either —
+   it holds no secrets, only summaries of what is already published — so
+   treat it as a convenience, not as a private page.                     */
+function viewAdmin(){
+  const people = Object.values(IX.byId);
+  const yr = s => year(s);
+  const has = (tab,id) => rowsFor(tab,id).length > 0;
+
+  const noName    = people.filter(p => /name unknown/i.test(p.Status||"") || /^unknown\b/i.test(name(p)));
+  const noParents = people.filter(p => !parentsOf(p).length && p.PersonID !== (setting("root_person_id")||""));
+  const noDates   = people.filter(p => !yr(p.BirthDate) && !yr(p.DeathDate) && !isYes(p.Living));
+  const bare      = people.filter(p => !(p.ShortBio||"").trim() && !yr(p.BirthDate) &&
+                        !has("PLACES",p.PersonID) && !has("OCCUPATIONS",p.PersonID) &&
+                        !has("EDUCATION",p.PersonID) && !has("STORIES",p.PersonID));
+  const noFlag    = people.filter(p => !isYes(p.Living) && !yr(p.DeathDate) && !(p.DeathPlace||"").trim()
+                        && !/^no$/i.test((p.Living||"").trim()));
+  const needsWork = people.filter(p => /needs clarification/i.test(p.Status||""));
+  const pending   = PENDING;
+  const noPhoto   = people.filter(p => !profilePhoto(p));
+  const withPhoto = people.length - noPhoto.length;
+  const limited   = people.filter(p => isLimited(p) && !isPrivate(p));
+  const priv      = people.filter(p => isPrivate(p));
+
+  const sheetId = CONFIG.SHEET_ID || setting("sheet_id","");
+  const list = (rows, empty) => rows.length
+    ? `<div class="plist" style="margin-top:10px">${rows.slice(0,40).map(p=>personChip(p.PersonID,"")).join("")}
+       ${rows.length>40?`<span class="chip">+${rows.length-40} more</span>`:""}</div>`
+    : `<p class="small muted" style="margin:8px 0 0">${empty}</p>`;
+
+  app().innerHTML = `
+  <div class="notice noprint" style="margin-bottom:20px">
+    <strong>Administrator's worklist — unlisted, not private.</strong>
+    This page is not linked from the site and does not appear in the menu, but anyone who
+    knows the address can open it. It shows only summaries of information already published here.
+    Nothing confidential belongs on it.
+  </div>
+
+  <h1 style="margin-bottom:4px">Worklist</h1>
+  <p class="muted small" style="margin-top:0">
+    Reading from ${SOURCE==="sheet" ? "the published spreadsheet"
+      : SOURCE==="script" ? "the Apps Script backend"
+      : "the built-in fallback copy — the live spreadsheet could not be reached"}.
+    ${sheetId ? `<a href="https://docs.google.com/spreadsheets/d/${esc(sheetId)}/edit" target="_blank" rel="noopener">Open the spreadsheet ↗</a>` : ""}
+  </p>
+
+  <div class="stats" style="margin-bottom:26px">
+    ${stat(people.length,"people")}
+    ${stat(withPhoto,"with a photograph")}
+    ${stat(approved(DB.STORIES||[]).length,"stories")}
+    ${stat(limited.length,"living, screened")}
+    ${stat(priv.length,"private")}
+  </div>
+
+  ${pending ? `<div class="notice" style="border-color:var(--green); background:var(--green-wash); color:var(--green); margin-bottom:16px">
+    <strong>${pending} submission(s) waiting for your approval.</strong>
+    Open the spreadsheet and use <em>Family Tree ▸ Review the approval queue</em>.
+  </div>` : ""}
+
+  ${section(`Names still to recover · ${noName.length}`,
+    list(noName, "Every person on record has a name."))}
+
+  ${section(`Not attached to a parent · ${noParents.length}`,
+    `<p class="small muted" style="margin:0">These people float free of the tree. Usually a missing FatherID or MotherID.</p>
+     ${list(noParents, "Everyone is attached to the tree.")}`)}
+
+  ${section(`Marked for clarification · ${needsWork.length}`,
+    list(needsWork, "Nothing is flagged."))}
+
+  ${section(`Nothing recorded but a name · ${bare.length}`,
+    `<p class="small muted" style="margin:0">No dates, places, work, schooling or stories yet. The best candidates for an elder's memory.</p>
+     ${list(bare, "Everyone has something recorded.")}`)}
+
+  ${section(`Living status not set · ${noFlag.length}`,
+    `<p class="small muted" style="margin:0">Neither Living = Yes nor any death detail. Until this is set, their dates and
+     places show publicly. Worth resolving before sharing the site widely.</p>
+     ${list(noFlag, "Every person's living status is recorded.")}`)}
+
+  ${section(`Still on a silhouette · ${noPhoto.length}`,
+    list(noPhoto, "Everyone has a photograph."))}
+
+  ${section("Adding someone", `
+    <ol class="small" style="padding-left:18px; margin:0">
+      <li>Add a row to <b>PEOPLE</b> and give them the next free Person ID.</li>
+      <li>Put their father's and mother's IDs in <b>FatherID</b> and <b>MotherID</b>.</li>
+      <li>Reload the site. Siblings, cousins and descendants are worked out for you.</li>
+    </ol>
+    <p class="small muted" style="margin:12px 0 0">Leave anything you do not know blank. Never invent a detail to fill a gap.
+    The spreadsheet's <em>Family Tree</em> menu has tools for IDs, generations, branches and a full data check.</p>`)}`;
+}
+
 /* ── router ─────────────────────────────────────────────────────────── */
 function route(){
   const raw = location.hash.replace(/^#\/?/,"");
@@ -1266,6 +1368,7 @@ function route(){
     case "stories": viewStories(); break;
     case "gallery": viewGallery(); break;
     case "contribute": viewContribute(); break;
+    case "admin": viewAdmin(); break;              // unlisted; never in the menu
     default: viewHome();
   }
   const p = page==="person" ? P(decodeURIComponent(parts[1]||"")) : null;
@@ -1283,8 +1386,10 @@ if(window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches)
 
 (async function(){
   await loadAll();
+  dropUnapproved();
   readSettings();
   buildIndex();
+  console.info(`Family tree: reading from "${SOURCE}" · ${Object.keys(IX.byId).length} people · worklist at #/admin`);
   document.getElementById("brandText").textContent = setting("site_title","Odikom Family Tree");
   document.getElementById("footNote").textContent = setting("tagline","Build Once. Grow Forever.");
   if(CONFIG.APPS_SCRIPT_URL && isYes(setting("allow_uploads","Yes")))
