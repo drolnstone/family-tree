@@ -39,6 +39,35 @@ const KEEP_BACKUPS = 30;
 const TABS = ['PEOPLE','RELATIONSHIPS','PLACES','OCCUPATIONS','EDUCATION',
               'EVENTS','PHOTOS','STORIES','SETTINGS'];
 
+/**
+ * This is a blood-descent tree. A person hangs off the family by ParentID — one
+ * ungendered column. Parent2ID is only for the rare case where both parents are
+ * on record, such as the originating couple. FatherID and MotherID are still
+ * read so that a sheet which has not yet been renamed keeps working.
+ */
+const PARENT_FIELDS = ['ParentID', 'Parent2ID', 'FatherID', 'MotherID'];
+
+/** True for someone who married into the family rather than descending from it. */
+function marriedIn_(r) { return /^no$/i.test(String((r && r.Bloodline) || '').trim()); }
+
+/** Every parent of a row that actually exists and belongs to the line. */
+function parentsOfRow_(r, byId) {
+  const out = [];
+  PARENT_FIELDS.forEach(function (f) {
+    const v = String(r[f] || '').trim();
+    if (v && v !== r.PersonID && byId[v] && !marriedIn_(byId[v]) && out.indexOf(v) === -1) out.push(v);
+  });
+  return out;
+}
+
+/** The parent column to write into: ParentID if the sheet has been renamed. */
+function primaryParentField_(header) {
+  return header.indexOf('ParentID') >= 0 ? 'ParentID' : 'FatherID';
+}
+function secondParentField_(header) {
+  return header.indexOf('Parent2ID') >= 0 ? 'Parent2ID' : 'MotherID';
+}
+
 // ─── Spreadsheet helpers ───────────────────────────────────────────────────
 
 function book_() {
@@ -192,7 +221,7 @@ const INBOX_HEADER = [
   'When','Kind','PersonID','Person','Title','Body','DriveFileID',
   'PhotoDate','Place','Uploader','Status','Published as',
   // used when someone suggests a person who is missing from the tree
-  'Relation','Name','Gender','BirthDate','BirthPlace','DeathDate','DeathPlace','Living','Contact'
+  'Relation','Name','Gender','BirthDate','BirthPlace','DeathDate','DeathPlace','Living','Contact','Spouse'
 ];
 
 /** Largest number of unreviewed submissions to hold. A crude spam ceiling. */
@@ -318,7 +347,8 @@ function suggestPerson_(b) {
   const related = table_('PEOPLE').rows.filter(function (r) { return r.PersonID === clip_(b.relatedId, 20); })[0];
   if (!related) return { ok: false, error: 'Please say who this person is related to.' };
 
-  const rel = ['child of', 'sibling of', 'spouse of', 'parent of'].indexOf(clip_(b.relation, 20)) >= 0
+  // Blood relations only. Anything else falls back to the safe default.
+  const rel = ['child of', 'sibling of', 'parent of'].indexOf(clip_(b.relation, 20)) >= 0
     ? clip_(b.relation, 20) : 'child of';
   const gender = ['M', 'F', 'U'].indexOf(clip_(b.gender, 1).toUpperCase()) >= 0
     ? clip_(b.gender, 1).toUpperCase() : 'U';
@@ -339,6 +369,7 @@ function suggestPerson_(b) {
   row['DeathDate'] = clip_(b.deathDate, 40);
   row['DeathPlace'] = clip_(b.deathPlace, 120);
   row['Living'] = living;
+  row['Spouse'] = clip_(b.spouse, 120);      // who they married, if the contributor knew
   row['Uploader'] = clip_(b.from, 120) || 'Anonymous';
   row['Contact'] = clip_(b.contact, 160);
   row['Status'] = 'Pending';
@@ -452,6 +483,7 @@ function onOpen() {
     .addItem('Give IDs to any new rows', 'assignMissingIds')
     .addItem('Recalculate generations', 'recalcGenerations')
     .addItem('Name the family branches…', 'assignBranches')
+    .addItem('Switch to a single Parent column', 'useSingleParentColumn')
     .addSeparator()
     .addItem('Check the record for problems', 'validateRecord')
     .addItem('Family statistics', 'showStats')
@@ -476,35 +508,32 @@ function addPersonPrompt() {
   const nameAsk = ui.prompt('Add a person', 'What is their name? (Leave blank for an unknown name.)', ui.ButtonSet.OK_CANCEL);
   if (nameAsk.getSelectedButton() !== ui.Button.OK) return;
 
-  const fatherAsk = ui.prompt('Add a person', "Father's Person ID (blank if unknown):", ui.ButtonSet.OK_CANCEL);
-  if (fatherAsk.getSelectedButton() !== ui.Button.OK) return;
-  const motherAsk = ui.prompt('Add a person', "Mother's Person ID (blank if unknown):", ui.ButtonSet.OK_CANCEL);
-  if (motherAsk.getSelectedButton() !== ui.Button.OK) return;
+  const parentAsk = ui.prompt('Add a person',
+    "Person ID of their parent — whichever parent is already in this family.\n" +
+    "Leave blank if unknown.", ui.ButtonSet.OK_CANCEL);
+  if (parentAsk.getSelectedButton() !== ui.Button.OK) return;
 
-  const father = fatherAsk.getResponseText().trim().toUpperCase();
-  const mother = motherAsk.getResponseText().trim().toUpperCase();
-  const people = table_('PEOPLE').rows;
+  const t = table_('PEOPLE');
   const byId = {};
-  people.forEach(function (r) { byId[r.PersonID] = r; });
+  t.rows.forEach(function (r) { byId[r.PersonID] = r; });
 
-  [father, mother].forEach(function (p) {
-    if (p && !byId[p]) throw new Error('There is no person with the ID ' + p + '.');
-  });
+  const parentId = parentAsk.getResponseText().trim().toUpperCase();
+  if (parentId && !byId[parentId]) throw new Error('There is no person with the ID ' + parentId + '.');
+  const parent = byId[parentId];
 
-  const parent = byId[father] || byId[mother];
   const id = nextId_('PEOPLE', 'PersonID', 'P', 3);
-  appendRow_('PEOPLE', {
+  const row = {
     PersonID: id,
     DisplayName: nameAsk.getResponseText().trim() || 'Unknown',
     Gender: 'U',
-    FatherID: father,
-    MotherID: mother,
     Branch: parent ? (parent.Branch || '') : '',
     Generation: parent && parent.Generation ? (parseInt(parent.Generation, 10) + 1) : '',
     Living: 'Unknown',
     Privacy: 'Public',
     Status: 'Reported by family'
-  });
+  };
+  row[primaryParentField_(t.header)] = parentId;
+  appendRow_('PEOPLE', row);
   ui.alert('Added', id + ' has been added. Open the PEOPLE sheet to fill in the rest of what you know.', ui.ButtonSet.OK);
 }
 
@@ -546,15 +575,14 @@ function recalcGenerations() {
 
   const gen = {};
   t.rows.forEach(function (r) {
-    const hasParent = (r.FatherID && byId[r.FatherID]) || (r.MotherID && byId[r.MotherID]);
-    if (!hasParent) gen[r.PersonID] = 1;
+    if (!marriedIn_(r) && !parentsOfRow_(r, byId).length) gen[r.PersonID] = 1;
   });
 
   // Repeatedly push generations downward. Bounded so a cycle cannot hang it.
   for (var pass = 0; pass < t.rows.length + 2; pass++) {
     var changed = false;
     t.rows.forEach(function (r) {
-      const parents = [r.FatherID, r.MotherID].filter(function (p) { return p && gen[p]; });
+      const parents = parentsOfRow_(r, byId).filter(function (p) { return gen[p]; });
       if (!parents.length) return;
       const want = Math.max.apply(null, parents.map(function (p) { return gen[p]; })) + 1;
       if (gen[r.PersonID] !== want) { gen[r.PersonID] = want; changed = true; }
@@ -564,7 +592,7 @@ function recalcGenerations() {
 
   var n = 0;
   t.rows.forEach(function (r) {
-    const v = gen[r.PersonID] || '';
+    const v = marriedIn_(r) ? '' : (gen[r.PersonID] || '');
     if (String(r.Generation) !== String(v)) { t.sheet.getRange(r._row, col).setValue(v); n++; }
   });
   ui_().alert('Generations updated', n + ' row(s) changed.', ui_().ButtonSet.OK);
@@ -588,20 +616,18 @@ function assignBranches() {
   const byId = {}, kids = {};
   t.rows.forEach(function (r) { if (r.PersonID) byId[r.PersonID] = r; });
   t.rows.forEach(function (r) {
-    [r.FatherID, r.MotherID].forEach(function (p) {
-      if (p && byId[p]) (kids[p] = kids[p] || []).push(r.PersonID);
-    });
+    parentsOfRow_(r, byId).forEach(function (p) { (kids[p] = kids[p] || []).push(r.PersonID); });
   });
 
   // Work out generations from the data rather than trusting the column.
   const gen = {};
   t.rows.forEach(function (r) {
-    if (!((r.FatherID && byId[r.FatherID]) || (r.MotherID && byId[r.MotherID]))) gen[r.PersonID] = 1;
+    if (!parentsOfRow_(r, byId).length) gen[r.PersonID] = 1;
   });
   for (var pass = 0; pass < t.rows.length + 2; pass++) {
     var changed = false;
     t.rows.forEach(function (r) {
-      const ps = [r.FatherID, r.MotherID].filter(function (p) { return p && gen[p]; });
+      const ps = parentsOfRow_(r, byId).filter(function (p) { return gen[p]; });
       if (!ps.length) return;
       const want = Math.max.apply(null, ps.map(function (p) { return gen[p]; })) + 1;
       if (gen[r.PersonID] !== want) { gen[r.PersonID] = want; changed = true; }
@@ -643,14 +669,6 @@ function assignBranches() {
     }
   });
 
-  // Married-in spouses have no parents on record, so take their partner's branch.
-  table_('RELATIONSHIPS').rows.forEach(function (r) {
-    if (!/spouse|partner|married/i.test(r.Type || '')) return;
-    [[r.Person1ID, r.Person2ID], [r.Person2ID, r.Person1ID]].forEach(function (pair) {
-      if (byId[pair[0]] && !label[pair[0]] && label[pair[1]]) label[pair[0]] = label[pair[1]];
-    });
-  });
-
   var written = 0, kept = 0, blank = 0;
   t.rows.forEach(function (r) {
     if (!r.PersonID) return;
@@ -678,6 +696,61 @@ function assignBranches() {
     'Reload the website to see them.', ui.ButtonSet.OK);
 }
 
+/**
+ * Menu ▸ Switch to a single Parent column.
+ *
+ * Renames FatherID → ParentID and MotherID → Parent2ID. This is a header rename
+ * only: every existing value stays exactly where it is, in the same cell, and no
+ * Person ID changes. Safe to run once; harmless if run again.
+ *
+ * The point is that this is a blood-descent tree, so for almost everybody only
+ * one parent is a member of the family — the other married in and is not
+ * recorded. One ungendered column matches how the sheet is actually used, and it
+ * removes the guesswork about which column a parent belongs in.
+ */
+function useSingleParentColumn() {
+  const ui = ui_();
+  const t = table_('PEOPLE');
+  const iFather = t.header.indexOf('FatherID');
+  const iMother = t.header.indexOf('MotherID');
+
+  if (iFather < 0 && iMother < 0) {
+    ui.alert('Already done',
+      'This sheet already uses ParentID' +
+      (t.header.indexOf('Parent2ID') >= 0 ? ' and Parent2ID' : '') + '. Nothing to change.',
+      ui.ButtonSet.OK);
+    return;
+  }
+
+  var both = 0, one = 0, none = 0;
+  t.rows.forEach(function (r) {
+    const f = String(r.FatherID || '').trim(), m = String(r.MotherID || '').trim();
+    if (f && m) both++; else if (f || m) one++; else none++;
+  });
+
+  const go = ui.alert('Switch to a single Parent column',
+    'FatherID will be renamed ParentID, and MotherID will be renamed Parent2ID.\n\n' +
+    'Only the two heading cells change. Every value stays in the cell it is in now,\n' +
+    'and no Person ID is touched.\n\n' +
+    'In this sheet right now:\n' +
+    '  ' + one + ' person(s) have one parent recorded — nothing changes for them\n' +
+    '  ' + both + ' person(s) have two — both are kept, in ParentID and Parent2ID\n' +
+    '  ' + none + ' person(s) have none\n\n' +
+    'Back up first if you would rather (Family Tree ▸ Back up now). Go ahead?',
+    ui.ButtonSet.YES_NO);
+  if (go !== ui.Button.YES) return;
+
+  if (iFather >= 0) t.sheet.getRange(1, iFather + 1).setValue('ParentID');
+  if (iMother >= 0) t.sheet.getRange(1, iMother + 1).setValue('Parent2ID');
+
+  ui.alert('Done',
+    'From now on you only need to fill in ParentID — whichever parent is already in the family.\n\n' +
+    'Parent2ID is there for the rare case where both parents are on record, such as the\n' +
+    'originating couple. Leave it blank otherwise.\n\n' +
+    'The website understands both the old and the new names, so nothing breaks either way.',
+    ui.ButtonSet.OK);
+}
+
 /** Menu ▸ Check the record for problems. */
 function validateRecord() {
   const people = table_('PEOPLE').rows;
@@ -690,22 +763,24 @@ function validateRecord() {
     byId[r.PersonID] = r;
   });
 
+  const yr = function (s) { const m = String(s || '').match(/\b(\d{4})\b/); return m ? +m[1] : null; };
+  const marriedInIds = {};
+  people.forEach(function (r) { if (marriedIn_(r)) marriedInIds[r.PersonID] = true; });
   people.forEach(function (r) {
-    ['FatherID', 'MotherID'].forEach(function (k) {
+    if (marriedIn_(r) && parentsOfRow_(r, byId).length)
+      warnings.push(r.PersonID + ' is marked as married into the family but also has a parent recorded. ' +
+                    'Decide which they are.');
+    PARENT_FIELDS.forEach(function (k) {
+      if (r[k] && marriedInIds[r[k]])
+        warnings.push(r.PersonID + ' has ' + r[k] + ' as a parent, but ' + r[k] +
+                      ' is marked as married into the family. A spouse holds no place in the line.');
       if (r[k] && !byId[r[k]]) problems.push(r.PersonID + ' has ' + k + ' = ' + r[k] + ', but no such person exists.');
+      if (r[k] && r[k] === r.PersonID) problems.push(r.PersonID + ' is recorded as their own parent.');
     });
-    if (r.FatherID && byId[r.FatherID] && byId[r.FatherID].Gender === 'F')
-      warnings.push(r.PersonID + "'s father " + r.FatherID + ' is recorded as female.');
-    if (r.MotherID && byId[r.MotherID] && byId[r.MotherID].Gender === 'M')
-      warnings.push(r.PersonID + "'s mother " + r.MotherID + ' is recorded as male.');
-
-    const yr = function (s) { const m = String(s || '').match(/\b(\d{4})\b/); return m ? +m[1] : null; };
-    [['FatherID','father'],['MotherID','mother']].forEach(function (pair) {
-      const p = byId[r[pair[0]]];
-      if (!p) return;
-      const c = yr(r.BirthDate), pb = yr(p.BirthDate);
+    parentsOfRow_(r, byId).forEach(function (pid) {
+      const c = yr(r.BirthDate), pb = yr(byId[pid].BirthDate);
       if (c && pb && c <= pb + 12)
-        warnings.push(r.PersonID + ' (b. ' + c + ') is barely younger than their ' + pair[1] + ' ' + p.PersonID + ' (b. ' + pb + ').');
+        warnings.push(r.PersonID + ' (b. ' + c + ') is barely younger than their parent ' + pid + ' (b. ' + pb + ').');
     });
   });
 
@@ -715,7 +790,7 @@ function validateRecord() {
     while (cur && byId[cur] && hops++ < 200) {
       if (seen[cur]) { problems.push('Circular parentage involving ' + r.PersonID + '.'); break; }
       seen[cur] = true;
-      cur = byId[cur].FatherID || byId[cur].MotherID;
+      cur = parentsOfRow_(byId[cur], byId)[0];
     }
   });
 
@@ -731,11 +806,18 @@ function validateRecord() {
   // Anyone floating free of the main tree.
   const linked = {};
   people.forEach(function (r) {
-    if ((r.FatherID && byId[r.FatherID]) || (r.MotherID && byId[r.MotherID])) linked[r.PersonID] = true;
-    [r.FatherID, r.MotherID].forEach(function (p) { if (p && byId[p]) linked[p] = true; });
+    const ps = parentsOfRow_(r, byId);
+    if (ps.length) linked[r.PersonID] = true;
+    ps.forEach(function (p) { linked[p] = true; });
   });
   table_('RELATIONSHIPS').rows.forEach(function (r) {
     if (byId[r.Person1ID] && byId[r.Person2ID]) { linked[r.Person1ID] = true; linked[r.Person2ID] = true; }
+  });
+  people.forEach(function (r) {
+    if (String(r.Spouse || '').trim() || String(r.SpouseID || '').trim()) linked[r.PersonID] = true;
+    String(r.SpouseID || '').split(/[;,]/).forEach(function (x) {
+      x = x.trim(); if (x && byId[x]) linked[x] = true;
+    });
   });
   const loose = people.filter(function (r) { return r.PersonID && !linked[r.PersonID]; })
                       .map(function (r) { return r.PersonID + ' (' + (r.DisplayName || '?') + ')'; });
@@ -759,10 +841,12 @@ function showStats() {
   const branches = {};
   people.forEach(function (r) { const b = r.Branch || 'Unassigned'; branches[b] = (branches[b] || 0) + 1; });
   const unnamed = people.filter(function (r) { return /name unknown/i.test(r.Status) || /^unknown/i.test(r.DisplayName); }).length;
+  const married = people.filter(marriedIn_).length;
   const living = people.filter(function (r) { return /^yes$/i.test(r.Living); }).length;
 
   ui_().alert('The family so far',
-    'People recorded: ' + people.length + '\n' +
+    'People recorded: ' + people.length + '  (in the line: ' + (people.length - married) +
+      ', married in: ' + married + ')\n' +
     'Generations: ' + (gens.length ? Math.max.apply(null, gens) : 0) + '\n' +
     'Living: ' + living + '\n' +
     'Names still to recover: ' + unnamed + '\n\n' +
@@ -818,30 +902,30 @@ function publishPerson_(r) {
   const related = t.rows.filter(function (x) { return x.PersonID === r.PersonID; })[0];
   if (!related) throw new Error('The person this suggestion hangs off (' + r.PersonID + ') no longer exists.');
 
+  const byId = {};
+  t.rows.forEach(function (x) { byId[x.PersonID] = x; });
+
+  const PARENT = primaryParentField_(t.header);
   const rel = String(r.Relation || 'child of').toLowerCase();
   const gender = ['M', 'F'].indexOf(String(r.Gender || '').toUpperCase()) >= 0
     ? String(r.Gender).toUpperCase() : 'U';
   const relGen = parseInt(related.Generation, 10);
   const notes = [];
-  var father = '', mother = '', generation = '';
+  const fields = {};
+  var generation = '';
 
   if (rel.indexOf('child') === 0) {
-    if (related.Gender === 'F') mother = related.PersonID;
-    else father = related.PersonID;
-    if (related.Gender !== 'M' && related.Gender !== 'F')
-      notes.push('Parent ' + related.PersonID + "'s gender is not recorded, so they were put in FatherID. " +
-                 'Move to MotherID if that is wrong.');
+    fields[PARENT] = related.PersonID;
     if (!isNaN(relGen)) generation = relGen + 1;
 
   } else if (rel.indexOf('sibling') === 0) {
-    father = related.FatherID || '';
-    mother = related.MotherID || '';
-    if (!father && !mother)
-      notes.push('No parents are recorded for ' + related.PersonID + ', so this sibling is not linked to the tree yet. ' +
-                 'Add a FatherID or MotherID to both of them.');
-    if (!isNaN(relGen)) generation = relGen;
-
-  } else if (rel.indexOf('spouse') === 0 || rel.indexOf('partner') === 0) {
+    // Take the same parents as the sibling, whichever columns they sit in.
+    const ps = parentsOfRow_(related, byId);
+    if (ps.length) fields[PARENT] = ps[0];
+    if (ps.length > 1) fields[secondParentField_(t.header)] = ps[1];
+    if (!ps.length)
+      notes.push('No parent is recorded for ' + related.PersonID + ', so this sibling is not linked to the tree yet. ' +
+                 'Give them both the same ParentID.');
     if (!isNaN(relGen)) generation = relGen;
 
   } else if (rel.indexOf('parent') === 0) {
@@ -849,54 +933,48 @@ function publishPerson_(r) {
   }
 
   const id = nextId_('PEOPLE', 'PersonID', 'P', 3);
-  appendRow_('PEOPLE', {
+  const row = {
     PersonID: id,
     DisplayName: r.Name || 'Unknown',
     Gender: gender,
-    FatherID: father,
-    MotherID: mother,
     Branch: related.Branch || '',
     Generation: generation,
     BirthDate: r.BirthDate || '',
     BirthPlace: r.BirthPlace || '',
+    Spouse: r.Spouse || '',
     DeathDate: r.DeathDate || '',
     DeathPlace: r.DeathPlace || '',
-    // Anyone whose status is not clearly "no" is treated as living, so the
-    // privacy screen covers them from the moment they appear.
-    Living: /^no$/i.test(String(r.Living || '')) ? 'No' : (/^yes$/i.test(String(r.Living || '')) ? 'Yes' : 'Yes'),
+    // Anyone not clearly recorded as dead is treated as living, so the privacy
+    // screen covers them from the moment they appear.
+    Living: /^no$/i.test(String(r.Living || '')) ? 'No' : 'Yes',
     Privacy: 'Public',
     Status: 'Reported by family',
     Notes: ['Suggested by ' + (r.Uploader || 'a family member') +
             (r.Contact ? ' (' + r.Contact + ')' : '') + ', ' + rel + ' ' + related.PersonID + '.',
             r.Body ? 'They wrote: ' + r.Body : ''].concat(notes)
            .filter(function (x) { return x; }).join(' ')
-  });
+  };
+  Object.keys(fields).forEach(function (k) { row[k] = fields[k]; });
+  appendRow_('PEOPLE', row);
 
   // "Parent of" points the other way round: the existing person gains a parent.
+  // Use the main column if it is free, otherwise the second one. Never overwrite.
   if (rel.indexOf('parent') === 0) {
     const t2 = table_('PEOPLE');
     const target = t2.rows.filter(function (x) { return x.PersonID === related.PersonID; })[0];
-    const field = gender === 'F' ? 'MotherID' : 'FatherID';
-    const col = t2.header.indexOf(field) + 1;
+    const SECOND = secondParentField_(t2.header);
     const iNotes = t2.header.indexOf('Notes') + 1;
-    if (target && col) {
-      if (!String(target[field] || '').trim()) {
-        t2.sheet.getRange(target._row, col).setValue(id);
-      } else {
+    if (target) {
+      const free = !String(target[PARENT] || '').trim() ? PARENT
+                 : !String(target[SECOND] || '').trim() ? SECOND : '';
+      if (free) {
+        t2.sheet.getRange(target._row, t2.header.indexOf(free) + 1).setValue(id);
+      } else if (iNotes) {
         t2.sheet.getRange(target._row, iNotes).setValue(
           (target.Notes ? target.Notes + ' ' : '') +
-          'A family member suggested ' + id + ' as another ' + field.replace('ID', '') +
-          ', but one is already recorded. Please resolve.');
+          'A family member suggested ' + id + ' as a parent, but two are already recorded. Please resolve.');
       }
     }
-  }
-
-  if (rel.indexOf('spouse') === 0 || rel.indexOf('partner') === 0) {
-    appendRow_('RELATIONSHIPS', {
-      RelID: nextId_('RELATIONSHIPS', 'RelID', 'R', 3),
-      Person1ID: id, Person2ID: related.PersonID, Type: 'Spouse',
-      Status: 'Reported by family', Notes: 'From a family suggestion.'
-    });
   }
 
   return id;

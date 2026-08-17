@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="build" content="2026-08-17-1905">
+<meta name="build" content="2026-08-17-2017">
 <title>Odikom Family Tree</title>
 <meta name="description" content="A living record of the Odikom family — ancestry, relationships, places, professions and stories, preserved for the generations still to come.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext y='26' font-size='26'%3E%F0%9F%8C%B3%3C/text%3E%3C/svg%3E">
@@ -181,14 +181,9 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--green); outline-
 .chart ul ul::before{
   content:''; position:absolute; top:0; left:50%; border-left:2px solid var(--rule); width:0; height:26px;
 }
-.couple{display:inline-flex; align-items:stretch; gap:0; position:relative}
-.couple .knot{
-  align-self:center; width:22px; height:2px; background:var(--rule); position:relative; flex:0 0 22px;
-}
-.couple .knot span{
-  position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
-  background:var(--card); color:var(--ink-3); font-size:.9rem; line-height:1; padding:2px 1px;
-}
+/* wraps a person card, or two who are parents of the same children */
+.couple{display:inline-flex; position:relative}
+.joint{align-self:center; width:20px; height:2px; background:var(--rule); flex:0 0 20px}
 .tnode{
   display:flex; flex-direction:column; align-items:center; gap:6px; width:118px; padding:11px 8px 10px;
   background:var(--card); border:1px solid var(--rule); border-radius:var(--r-s); color:var(--ink);
@@ -360,9 +355,9 @@ footer.site{border-top:1px solid var(--rule); padding:24px 0 40px; color:var(--i
    built-in sample data below keeps the site working.
    ═════════════════════════════════════════════════════════════════════ */
 
-const SEED = {"PEOPLE":[{"PersonID":"P001","DisplayName":"Unknown Ancestor","FullName":"","OtherNames":"","Nickname":"","Gender":"M","FatherID":"","MotherID":"","Branch":"Obutom","Generation":"1","BirthDate":"","BirthPlace":"Obutom","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"No","Privacy":"Public","ProfilePhoto":"","ShortBio":"Earliest ancestor currently known through family oral history. Reported to have been a clan head of Obutom. His name has not yet been recovered.","Status":"Name unknown","SortOrder":"","Notes":"Ask the elders for his name. Everything below descends from him."},{"PersonID":"P002","DisplayName":"Unknown Wife","FullName":"","OtherNames":"","Nickname":"","Gender":"F","FatherID":"","MotherID":"","Branch":"Obutom","Generation":"1","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"No","Privacy":"Public","ProfilePhoto":"","ShortBio":"Wife of the earliest known ancestor. Her name has not yet been recovered.","Status":"Name unknown","SortOrder":"","Notes":""},{"PersonID":"P003","DisplayName":"Unknown Daughter","FullName":"","OtherNames":"","Nickname":"","Gender":"F","FatherID":"P001","MotherID":"P002","Branch":"Daughter Branch","Generation":"2","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"No","Privacy":"Public","ProfilePhoto":"","ShortBio":"Daughter of the original ancestors. Her descendants form the Daughter Branch.","Status":"Name unknown","SortOrder":"1","Notes":""},{"PersonID":"P004","DisplayName":"Unknown Son","FullName":"","OtherNames":"","Nickname":"","Gender":"M","FatherID":"P001","MotherID":"P002","Branch":"Son Branch","Generation":"2","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"No","Privacy":"Public","ProfilePhoto":"","ShortBio":"Son of the original ancestors. His descendants form the Son Branch.","Status":"Name unknown","SortOrder":"2","Notes":""},{"PersonID":"P005","DisplayName":"King of Boys","FullName":"","OtherNames":"","Nickname":"King of Boys","Gender":"M","FatherID":"","MotherID":"P003","Branch":"Daughter Branch","Generation":"3","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Unknown","Privacy":"Public","ProfilePhoto":"","ShortBio":"","Status":"Reported by family","SortOrder":"1","Notes":"Known to the family by this name. Given name not yet recorded."},{"PersonID":"P006","DisplayName":"Uncle Richard","FullName":"","OtherNames":"","Nickname":"Richard","Gender":"M","FatherID":"","MotherID":"P003","Branch":"Daughter Branch","Generation":"3","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Unknown","Privacy":"Public","ProfilePhoto":"","ShortBio":"","Status":"Reported by family","SortOrder":"2","Notes":""},{"PersonID":"P007","DisplayName":"Margres","FullName":"","OtherNames":"","Nickname":"","Gender":"U","FatherID":"","MotherID":"P003","Branch":"Daughter Branch","Generation":"3","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Unknown","Privacy":"Public","ProfilePhoto":"","ShortBio":"","Status":"Reported by family","SortOrder":"3","Notes":"Gender not yet confirmed - please check with the family."},{"PersonID":"P008","DisplayName":"Tennyson","FullName":"","OtherNames":"","Nickname":"","Gender":"M","FatherID":"P004","MotherID":"","Branch":"Son Branch","Generation":"3","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Unknown","Privacy":"Public","ProfilePhoto":"","ShortBio":"","Status":"Reported by family","SortOrder":"1","Notes":""},{"PersonID":"P009","DisplayName":"Jimmies","FullName":"","OtherNames":"","Nickname":"","Gender":"M","FatherID":"P004","MotherID":"","Branch":"Son Branch","Generation":"3","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Unknown","Privacy":"Public","ProfilePhoto":"","ShortBio":"","Status":"Reported by family","SortOrder":"2","Notes":""},{"PersonID":"P010","DisplayName":"Tommy","FullName":"","OtherNames":"","Nickname":"","Gender":"M","FatherID":"P004","MotherID":"","Branch":"Tommy Branch","Generation":"3","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Unknown","Privacy":"Public","ProfilePhoto":"","ShortBio":"","Status":"Reported by family","SortOrder":"3","Notes":""},{"PersonID":"P011","DisplayName":"Benjamin","FullName":"","OtherNames":"","Nickname":"","Gender":"M","FatherID":"P004","MotherID":"","Branch":"Son Branch","Generation":"3","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Unknown","Privacy":"Public","ProfilePhoto":"","ShortBio":"","Status":"Reported by family","SortOrder":"4","Notes":""},{"PersonID":"P012","DisplayName":"Adam","FullName":"","OtherNames":"","Nickname":"","Gender":"M","FatherID":"P010","MotherID":"","Branch":"Tommy Branch","Generation":"4","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Unknown","Privacy":"Public","ProfilePhoto":"","ShortBio":"","Status":"Reported by family","SortOrder":"1","Notes":""},{"PersonID":"P013","DisplayName":"Ediboy","FullName":"","OtherNames":"","Nickname":"","Gender":"M","FatherID":"P010","MotherID":"","Branch":"Ediboy Branch","Generation":"4","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Unknown","Privacy":"Public","ProfilePhoto":"","ShortBio":"","Status":"Reported by family","SortOrder":"2","Notes":""},{"PersonID":"P014","DisplayName":"You (Administrator)","FullName":"","OtherNames":"","Nickname":"","Gender":"U","FatherID":"P013","MotherID":"","Branch":"Ediboy Branch","Generation":"5","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Yes","Privacy":"Public","ProfilePhoto":"","ShortBio":"Keeper of this family archive.","Status":"Confirmed by family","SortOrder":"1","Notes":"Replace this row with your own name and details."},{"PersonID":"P015","DisplayName":"Sibling 1","FullName":"","OtherNames":"","Nickname":"","Gender":"U","FatherID":"P013","MotherID":"","Branch":"Ediboy Branch","Generation":"5","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Yes","Privacy":"Public","ProfilePhoto":"","ShortBio":"","Status":"Confirmed by family","SortOrder":"2","Notes":"Replace with the real name."},{"PersonID":"P016","DisplayName":"Sibling 2","FullName":"","OtherNames":"","Nickname":"","Gender":"U","FatherID":"P013","MotherID":"","Branch":"Ediboy Branch","Generation":"5","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Yes","Privacy":"Public","ProfilePhoto":"","ShortBio":"","Status":"Confirmed by family","SortOrder":"3","Notes":"Replace with the real name."},{"PersonID":"P017","DisplayName":"Sibling 3","FullName":"","OtherNames":"","Nickname":"","Gender":"U","FatherID":"P013","MotherID":"","Branch":"Ediboy Branch","Generation":"5","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Yes","Privacy":"Public","ProfilePhoto":"","ShortBio":"","Status":"Confirmed by family","SortOrder":"4","Notes":"Replace with the real name."},{"PersonID":"P018","DisplayName":"Sibling 4","FullName":"","OtherNames":"","Nickname":"","Gender":"U","FatherID":"P013","MotherID":"","Branch":"Ediboy Branch","Generation":"5","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Yes","Privacy":"Public","ProfilePhoto":"","ShortBio":"","Status":"Confirmed by family","SortOrder":"5","Notes":"Replace with the real name."},{"PersonID":"P019","DisplayName":"Your Child","FullName":"","OtherNames":"","Nickname":"","Gender":"U","FatherID":"P014","MotherID":"","Branch":"Ediboy Branch","Generation":"6","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Yes","Privacy":"Limited","ProfilePhoto":"","ShortBio":"","Status":"Confirmed by family","SortOrder":"1","Notes":"Replace with a real name, or delete the row until there is someone to add."}],"RELATIONSHIPS":[{"RelID":"R001","Person1ID":"P001","Person2ID":"P002","Type":"Spouse","StartDate":"","EndDate":"","Place":"Obutom","Status":"Reported by family","Notes":"The original couple. Both names are still to be recovered."}],"PLACES":[{"PlaceRecID":"L001","PersonID":"P001","Place":"Obutom","Country":"Nigeria","PlaceType":"Lived in","FromYear":"","ToYear":"","Notes":"Reported to have been a clan head here. Obutom is the ancestral home of this line.","Status":"Reported by family"}],"OCCUPATIONS":[{"OccRecID":"O001","PersonID":"P001","Occupation":"Clan Head","Specialisation":"","Employer":"","FromYear":"","ToYear":"","Place":"Obutom","Achievements":"Held clan leadership at Obutom.","Notes":"The earliest role recorded in family oral history.","Status":"Reported by family"}],"EDUCATION":[],"EVENTS":[],"PHOTOS":[],"STORIES":[{"StoryID":"S001","PersonID":"P001","Title":"The clan head of Obutom","Story":"Family oral history reports that the earliest ancestor known to this line was a clan head of Obutom. His name has not yet been recovered, and neither has his wife's. Every branch recorded in this archive descends from the two of them.\n\nThis entry is a placeholder for the fuller account. When an elder is able to tell the story properly - his name, the years he lived, how the clan leadership passed on - replace this text with what they say, and record who told it in the ToldBy column.","ToldBy":"","RecordedDate":"","Category":"Oral history","ApprovalStatus":"Approved","Notes":"Placeholder. Replace with a recorded account from an elder."}],"SETTINGS":[{"Key":"site_title","Value":"Odikom Family Tree","Description":"Name shown in the site header and browser tab."},{"Key":"tagline","Value":"Build Once. Grow Forever.","Description":"Line shown under the title on the home page."},{"Key":"root_person_id","Value":"P001","Description":"The person the main tree starts from."},{"Key":"hide_living_details","Value":"Yes","Description":"Yes = show only names and relationships for living people. Strongly recommended while the site is public."},{"Key":"sheet_id","Value":"","Description":"Filled in during setup. The ID of this spreadsheet, taken from its URL."},{"Key":"apps_script_url","Value":"","Description":"Filled in during setup. The /exec URL of the deployed Apps Script web app. Leave blank to hide the upload form."},{"Key":"drive_folder_id","Value":"","Description":"Filled in during setup. The Google Drive folder ID of FAMILY TREE/PEOPLE."},{"Key":"contact_email","Value":"","Description":"Optional. Shown to family members who want to send corrections."},{"Key":"allow_uploads","Value":"Yes","Description":"Yes = family members can submit photographs and stories for approval."},{"Key":"home_intro","Value":"This is a living record of our family. It begins with the ancestors whose names we still hope to recover, and continues through today's generation and the generations still to come. Every branch matters. Every person has a place.","Description":"Paragraph shown on the home page."}]};
+const SEED = {"PEOPLE":[{"PersonID":"P001","DisplayName":"Unknown Ancestor","FullName":"","OtherNames":"","Nickname":"","Gender":"M","ParentID":"","Parent2ID":"","Spouse":"","SpouseID":"P002","Bloodline":"Yes","Branch":"Obutom","Generation":"1","BirthDate":"","BirthPlace":"Obutom","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"No","Privacy":"Public","ProfilePhoto":"","ShortBio":"Earliest ancestor currently known through family oral history. Reported to have been a clan head of Obutom. His name has not yet been recovered.","Status":"Name unknown","SortOrder":"","Notes":"Ask the elders for his name. Everything below descends from him."},{"PersonID":"P002","DisplayName":"Unknown Wife","FullName":"","OtherNames":"","Nickname":"","Gender":"F","ParentID":"","Parent2ID":"","Spouse":"","SpouseID":"P001","Bloodline":"Yes","Branch":"Obutom","Generation":"1","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"No","Privacy":"Public","ProfilePhoto":"","ShortBio":"Wife of the earliest known ancestor. Her name has not yet been recovered.","Status":"Name unknown","SortOrder":"","Notes":""},{"PersonID":"P003","DisplayName":"Unknown Daughter","FullName":"","OtherNames":"","Nickname":"","Gender":"F","ParentID":"P001","Parent2ID":"P002","Spouse":"","SpouseID":"","Bloodline":"","Branch":"Daughter Branch","Generation":"2","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"No","Privacy":"Public","ProfilePhoto":"","ShortBio":"Daughter of the original ancestors. Her descendants form the Daughter Branch.","Status":"Name unknown","SortOrder":"1","Notes":""},{"PersonID":"P004","DisplayName":"Unknown Son","FullName":"","OtherNames":"","Nickname":"","Gender":"M","ParentID":"P001","Parent2ID":"P002","Spouse":"","SpouseID":"","Bloodline":"","Branch":"Son Branch","Generation":"2","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"No","Privacy":"Public","ProfilePhoto":"","ShortBio":"Son of the original ancestors. His descendants form the Son Branch.","Status":"Name unknown","SortOrder":"2","Notes":""},{"PersonID":"P005","DisplayName":"King of Boys","FullName":"","OtherNames":"","Nickname":"King of Boys","Gender":"M","ParentID":"P003","Parent2ID":"","Spouse":"","SpouseID":"","Bloodline":"","Branch":"Daughter Branch","Generation":"3","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Unknown","Privacy":"Public","ProfilePhoto":"","ShortBio":"","Status":"Reported by family","SortOrder":"1","Notes":"Known to the family by this name. Given name not yet recorded."},{"PersonID":"P006","DisplayName":"Uncle Richard","FullName":"","OtherNames":"","Nickname":"Richard","Gender":"M","ParentID":"P003","Parent2ID":"","Spouse":"","SpouseID":"","Bloodline":"","Branch":"Daughter Branch","Generation":"3","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Unknown","Privacy":"Public","ProfilePhoto":"","ShortBio":"","Status":"Reported by family","SortOrder":"2","Notes":""},{"PersonID":"P007","DisplayName":"Margres","FullName":"","OtherNames":"","Nickname":"","Gender":"U","ParentID":"P003","Parent2ID":"","Spouse":"","SpouseID":"","Bloodline":"","Branch":"Daughter Branch","Generation":"3","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Unknown","Privacy":"Public","ProfilePhoto":"","ShortBio":"","Status":"Reported by family","SortOrder":"3","Notes":"Gender not yet confirmed - please check with the family."},{"PersonID":"P008","DisplayName":"Tennyson","FullName":"","OtherNames":"","Nickname":"","Gender":"M","ParentID":"P004","Parent2ID":"","Spouse":"","SpouseID":"","Bloodline":"","Branch":"Son Branch","Generation":"3","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Unknown","Privacy":"Public","ProfilePhoto":"","ShortBio":"","Status":"Reported by family","SortOrder":"1","Notes":""},{"PersonID":"P009","DisplayName":"Jimmies","FullName":"","OtherNames":"","Nickname":"","Gender":"M","ParentID":"P004","Parent2ID":"","Spouse":"","SpouseID":"","Bloodline":"","Branch":"Son Branch","Generation":"3","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Unknown","Privacy":"Public","ProfilePhoto":"","ShortBio":"","Status":"Reported by family","SortOrder":"2","Notes":""},{"PersonID":"P010","DisplayName":"Tommy","FullName":"","OtherNames":"","Nickname":"","Gender":"M","ParentID":"P004","Parent2ID":"","Spouse":"","SpouseID":"","Bloodline":"","Branch":"Tommy Branch","Generation":"3","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Unknown","Privacy":"Public","ProfilePhoto":"","ShortBio":"","Status":"Reported by family","SortOrder":"3","Notes":""},{"PersonID":"P011","DisplayName":"Benjamin","FullName":"","OtherNames":"","Nickname":"","Gender":"M","ParentID":"P004","Parent2ID":"","Spouse":"","SpouseID":"","Bloodline":"","Branch":"Son Branch","Generation":"3","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Unknown","Privacy":"Public","ProfilePhoto":"","ShortBio":"","Status":"Reported by family","SortOrder":"4","Notes":""},{"PersonID":"P012","DisplayName":"Adam","FullName":"","OtherNames":"","Nickname":"","Gender":"M","ParentID":"P010","Parent2ID":"","Spouse":"","SpouseID":"","Bloodline":"","Branch":"Tommy Branch","Generation":"4","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Unknown","Privacy":"Public","ProfilePhoto":"","ShortBio":"","Status":"Reported by family","SortOrder":"1","Notes":""},{"PersonID":"P013","DisplayName":"Ediboy","FullName":"","OtherNames":"","Nickname":"","Gender":"M","ParentID":"P010","Parent2ID":"","Spouse":"","SpouseID":"","Bloodline":"","Branch":"Ediboy Branch","Generation":"4","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Unknown","Privacy":"Public","ProfilePhoto":"","ShortBio":"","Status":"Reported by family","SortOrder":"2","Notes":""},{"PersonID":"P014","DisplayName":"You (Administrator)","FullName":"","OtherNames":"","Nickname":"","Gender":"U","ParentID":"P013","Parent2ID":"","Spouse":"","SpouseID":"","Bloodline":"","Branch":"Ediboy Branch","Generation":"5","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Yes","Privacy":"Public","ProfilePhoto":"","ShortBio":"Keeper of this family archive.","Status":"Confirmed by family","SortOrder":"1","Notes":"Replace this row with your own name and details."},{"PersonID":"P015","DisplayName":"Sibling 1","FullName":"","OtherNames":"","Nickname":"","Gender":"U","ParentID":"P013","Parent2ID":"","Spouse":"","SpouseID":"","Bloodline":"","Branch":"Ediboy Branch","Generation":"5","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Yes","Privacy":"Public","ProfilePhoto":"","ShortBio":"","Status":"Confirmed by family","SortOrder":"2","Notes":"Replace with the real name."},{"PersonID":"P016","DisplayName":"Sibling 2","FullName":"","OtherNames":"","Nickname":"","Gender":"U","ParentID":"P013","Parent2ID":"","Spouse":"","SpouseID":"","Bloodline":"","Branch":"Ediboy Branch","Generation":"5","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Yes","Privacy":"Public","ProfilePhoto":"","ShortBio":"","Status":"Confirmed by family","SortOrder":"3","Notes":"Replace with the real name."},{"PersonID":"P017","DisplayName":"Sibling 3","FullName":"","OtherNames":"","Nickname":"","Gender":"U","ParentID":"P013","Parent2ID":"","Spouse":"","SpouseID":"","Bloodline":"","Branch":"Ediboy Branch","Generation":"5","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Yes","Privacy":"Public","ProfilePhoto":"","ShortBio":"","Status":"Confirmed by family","SortOrder":"4","Notes":"Replace with the real name."},{"PersonID":"P018","DisplayName":"Sibling 4","FullName":"","OtherNames":"","Nickname":"","Gender":"U","ParentID":"P013","Parent2ID":"","Spouse":"","SpouseID":"","Bloodline":"","Branch":"Ediboy Branch","Generation":"5","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Yes","Privacy":"Public","ProfilePhoto":"","ShortBio":"","Status":"Confirmed by family","SortOrder":"5","Notes":"Replace with the real name."},{"PersonID":"P019","DisplayName":"Your Child","FullName":"","OtherNames":"","Nickname":"","Gender":"U","ParentID":"P014","Parent2ID":"","Spouse":"","SpouseID":"","Bloodline":"","Branch":"Ediboy Branch","Generation":"6","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Yes","Privacy":"Limited","ProfilePhoto":"","ShortBio":"","Status":"Confirmed by family","SortOrder":"1","Notes":"Replace with a real name, or delete the row until there is someone to add."}],"RELATIONSHIPS":[],"PLACES":[{"PlaceRecID":"L001","PersonID":"P001","Place":"Obutom","Country":"Nigeria","PlaceType":"Lived in","FromYear":"","ToYear":"","Notes":"Reported to have been a clan head here. Obutom is the ancestral home of this line.","Status":"Reported by family"}],"OCCUPATIONS":[{"OccRecID":"O001","PersonID":"P001","Occupation":"Clan Head","Specialisation":"","Employer":"","FromYear":"","ToYear":"","Place":"Obutom","Achievements":"Held clan leadership at Obutom.","Notes":"The earliest role recorded in family oral history.","Status":"Reported by family"}],"EDUCATION":[],"EVENTS":[],"PHOTOS":[],"STORIES":[{"StoryID":"S001","PersonID":"P001","Title":"The clan head of Obutom","Story":"Family oral history reports that the earliest ancestor known to this line was a clan head of Obutom. His name has not yet been recovered, and neither has his wife's. Every branch recorded in this archive descends from the two of them.\n\nThis entry is a placeholder for the fuller account. When an elder is able to tell the story properly - his name, the years he lived, how the clan leadership passed on - replace this text with what they say, and record who told it in the ToldBy column.","ToldBy":"","RecordedDate":"","Category":"Oral history","ApprovalStatus":"Approved","Notes":"Placeholder. Replace with a recorded account from an elder."}],"SETTINGS":[{"Key":"site_title","Value":"Odikom Family Tree","Description":"Name shown in the site header and browser tab."},{"Key":"tagline","Value":"Build Once. Grow Forever.","Description":"Line shown under the title on the home page."},{"Key":"root_person_id","Value":"P001","Description":"The person the main tree starts from."},{"Key":"hide_living_details","Value":"Yes","Description":"Yes = show only names and relationships for living people. Strongly recommended while the site is public."},{"Key":"sheet_id","Value":"","Description":"Filled in during setup. The ID of this spreadsheet, taken from its URL."},{"Key":"apps_script_url","Value":"","Description":"Filled in during setup. The /exec URL of the deployed Apps Script web app. Leave blank to hide the upload form."},{"Key":"drive_folder_id","Value":"","Description":"Filled in during setup. The Google Drive folder ID of FAMILY TREE/PEOPLE."},{"Key":"contact_email","Value":"","Description":"Optional. Shown to family members who want to send corrections."},{"Key":"allow_uploads","Value":"Yes","Description":"Yes = family members can submit photographs and stories for approval."},{"Key":"home_intro","Value":"This is a living record of our family. It begins with the ancestors whose names we still hope to recover, and continues through today's generation and the generations still to come. Every branch matters. Every person has a place.","Description":"Paragraph shown on the home page."}]};
 const DB = {};
-const IX = {byId:{}, kids:{}, unions:{}, sub:{}};
+const IX = {byId:{}, kids:{}, sub:{}};
 let SOURCE = "sample";
 
 /* ── CSV (RFC 4180: quotes, embedded commas and newlines) ────────────── */
@@ -470,29 +465,28 @@ const setting = (k,d="") => (SET[k] !== undefined && SET[k] !== "") ? SET[k] : d
 const isYes = v => /^(yes|y|true|1)$/i.test(String(v||"").trim());
 
 /* ── index ──────────────────────────────────────────────────────────── */
+/* This is a blood-descent tree. A person is linked to the family by ParentID —
+   one ungendered column. Parent2ID exists only for the rare case where both
+   parents are on record, such as the originating couple. FatherID and MotherID
+   are still read so a sheet that has not been renamed keeps working. */
+const PARENT_FIELDS = ["ParentID","Parent2ID","FatherID","MotherID"];
+
 function buildIndex(){
-  IX.byId={}; IX.kids={}; IX.unions={}; IX.sub={};
+  IX.byId={}; IX.kids={}; IX.sub={};
   (DB.PEOPLE||[]).forEach(p => { if(p.PersonID) IX.byId[p.PersonID.trim()] = p; });
 
   Object.values(IX.byId).forEach(p => {
-    [p.FatherID, p.MotherID].forEach(par => {
-      par = (par||"").trim();
-      if(par && IX.byId[par]) (IX.kids[par] = IX.kids[par] || []).push(p.PersonID.trim());
-    });
+    parentsOf(p).forEach(par => (IX.kids[par] = IX.kids[par] || []).push(p.PersonID.trim()));
   });
-  // adoptive / guardian links add children too
+  // Adoption and guardianship also make someone a parent.
   (DB.RELATIONSHIPS||[]).forEach(r => {
     const t=(r.Type||"").toLowerCase(), a=(r.Person1ID||"").trim(), b=(r.Person2ID||"").trim();
     if(!a || !b) return;
-    if(/spouse|partner|married/.test(t)){
-      (IX.unions[a]=IX.unions[a]||[]).push(b);
-      (IX.unions[b]=IX.unions[b]||[]).push(a);
-    }else if(/adoptive parent|guardian|step-parent/.test(t)){
+    if(/adoptive parent|guardian|step-parent/.test(t)){
       if(!(IX.kids[a]||[]).includes(b)) (IX.kids[a]=IX.kids[a]||[]).push(b);
     }
   });
   Object.keys(IX.kids).forEach(k => IX.kids[k] = sortSibs(dedupe(IX.kids[k])));
-  Object.keys(IX.unions).forEach(k => IX.unions[k] = dedupe(IX.unions[k]));
 
   ["PLACES","OCCUPATIONS","EDUCATION","EVENTS","PHOTOS","STORIES"].forEach(tab => {
     IX.sub[tab] = {};
@@ -520,21 +514,47 @@ function sortSibs(ids){
 const P  = id => IX.byId[(id||"").trim()] || null;
 const name = p => (p && (p.DisplayName || p.FullName || p.PersonID)) || "Unknown";
 const kids = id => IX.kids[(id||"").trim()] || [];
-const spouses = id => IX.unions[(id||"").trim()] || [];
-const parentsOf = p => p ? [p.FatherID, p.MotherID].map(x=>(x||"").trim()).filter(x=>x && IX.byId[x]) : [];
+
+/* A marriage is documentation, not descent. Spouses are shown on a person's
+   page and nowhere else: they are never parents, never ancestors, never
+   descendants, and never drawn in the tree. Someone marked Bloodline = No has
+   married into the family and holds no place in the line at all. */
+const splitIds = v => String(v||"").split(/[;,]/).map(x=>x.trim()).filter(Boolean);
+const marriedIn = p => /^no$/i.test(String(p?.Bloodline||"").trim());
+
+/** [{id, name}] — id is present only when the spouse has a record of their own. */
+function spousesOf(p){
+  if(!p) return [];
+  const out = [];
+  splitIds(p.SpouseID).forEach(id => { const q=P(id); if(q) out.push({id, name:name(q)}); });
+  splitIds(p.Spouse).forEach(nm => { if(!out.some(x=>x.name===nm)) out.push({id:null, name:nm}); });
+  return out;
+}
+/** What to call this person's spouse, given their own gender. */
+function spouseLabel(p, n){
+  const g=(p?.Gender||"U").toUpperCase();
+  if(g==="M") return n>1 ? "Wives" : "Wife";
+  if(g==="F") return n>1 ? "Husbands" : "Husband";
+  return n>1 ? "Spouses" : "Spouse";
+}
+const parentsOf = p => p
+  ? dedupe(PARENT_FIELDS.map(f => (p[f]||"").trim()))
+      .filter(x => x && IX.byId[x] && x !== p.PersonID && !marriedIn(IX.byId[x]))
+  : [];
 const isPrivate = p => /^private$/i.test(p?.Privacy||"");
 const isLimited = p => isPrivate(p) || (isYes(setting("hide_living_details","Yes")) && isYes(p?.Living));
 function year(s){ const m = String(s||"").match(/\b(\d{4})\b/); return m ? +m[1] : null; }
 function rowsFor(tab,id){ return (IX.sub[tab] && IX.sub[tab][id]) || []; }
 function approved(rows){ return rows.filter(r => !r.ApprovalStatus || /^approved$/i.test(r.ApprovalStatus)); }
 
+/** Anyone who shares a parent. */
 function siblings(id){
   const p = P(id); if(!p) return [];
-  const f=(p.FatherID||"").trim(), m=(p.MotherID||"").trim();
-  if(!f && !m) return [];
+  const mine = new Set(parentsOf(p));
+  if(!mine.size) return [];
   return sortSibs(Object.values(IX.byId)
     .filter(q => q.PersonID !== id)
-    .filter(q => (f && (q.FatherID||"").trim()===f) || (m && (q.MotherID||"").trim()===m))
+    .filter(q => parentsOf(q).some(x => mine.has(x)))
     .map(q => q.PersonID.trim()));
 }
 function lifespan(p){
@@ -596,7 +616,7 @@ function relationshipTo(fromId, toId){
   A.forEach((da,anc)=>{ if(B.has(anc)){ const db=B.get(anc); const s=da+db;
     if(!best || s<best.s || (s===best.s && Math.min(da,db)<Math.min(best.da,best.db))) best={anc,da,db,s};
   }});
-  if(!best) return (spouses(fromId).includes(toId)) ? "spouse" : "";
+  if(!best) return "";                    // no blood connection on record
   const {da,db}=best;
   // da = generations from `from` up to the shared ancestor; db = the same for `to`.
   if(da===1 && db===1) return "sibling";
@@ -867,12 +887,13 @@ function fitTree(){
 }
 function rootMost(){
   const people=Object.values(IX.byId);
-  const roots = people.filter(p=>!parentsOf(p).length);
+  const roots = people.filter(p=>!parentsOf(p).length && !marriedIn(p));
   const pick = roots.sort((a,b)=>descendantSet(b.PersonID).size-descendantSet(a.PersonID).size)[0] || people[0];
   return pick.PersonID;
 }
 function drawTree(fit){
   const host=document.getElementById("treeHost"); if(!host) return;
+  DRAWN = new Set();
   if(TREE.mode==="outline"){
     host.innerHTML = `<div class="card pad"><ul class="outline">${outlineNode(TREE.root,new Set())}</ul></div>`;
   }else{
@@ -896,33 +917,58 @@ function nodeCard(id, focus){
     ${ls?`<span class="yr">${esc(ls)}</span>`:""}
   </a>`;
 }
+let DRAWN = null;   // reset each render, so nobody appears twice in one chart
+
+/**
+ * Anyone who is a parent of the same children as this person — which in this
+ * tree means the originating couple. They are drawn side by side because both
+ * are ancestors of everyone below, not because they were married.
+ */
+function coParents(id){
+  const mine = new Set(kids(id));
+  if(!mine.size) return [];
+  return Object.values(IX.byId)
+    .filter(q => q.PersonID !== id && !DRAWN.has(q.PersonID) && !marriedIn(q))
+    .filter(q => kids(q.PersonID).some(k => mine.has(k)))
+    .map(q => q.PersonID);
+}
+
 function chartNode(id, seen){
-  if(seen.has(id)) return "";
-  seen = new Set(seen); seen.add(id);
-  const ch = kids(id).filter(k=>!seen.has(k));
+  if(seen.has(id) || DRAWN.has(id)) return "";
+  seen = new Set(seen); seen.add(id); DRAWN.add(id);
+
+  const co = coParents(id);
+  co.forEach(c => DRAWN.add(c));
+  const all = new Set(kids(id));
+  co.forEach(c => kids(c).forEach(k => all.add(k)));
+  const ch = [...all].filter(k => !seen.has(k) && !DRAWN.has(k));
+
   const collapsed = TREE.collapsed.has(id);
-  const sp = spouses(id).filter(s=>P(s));
-  const couple = `<div class="couple">${nodeCard(id, id===TREE.root)}${
-    sp.map(s=>`<div class="knot"><span>⚭</span></div>${nodeCard(s,false)}`).join("")}${
+  const card = `<div class="couple">${nodeCard(id, id===TREE.root)}${
+    co.map(c => `<div class="joint"></div>${nodeCard(c,false)}`).join("")}${
     ch.length ? `<button class="expander" data-toggle="${esc(id)}" title="${collapsed?"Show":"Hide"} ${ch.length} ${ch.length===1?"child":"children"}">${collapsed?`+${ch.length}`:"−"}</button>` : ""
   }</div>`;
   const sub = (ch.length && !collapsed) ? `<ul>${ch.map(k=>chartNode(k,seen)).join("")}</ul>` : "";
-  return `<li>${couple}${sub}</li>`;
+  return `<li>${card}${sub}</li>`;
 }
 function outlineNode(id, seen){
-  if(seen.has(id)) return "";
-  seen=new Set(seen); seen.add(id);
+  if(seen.has(id) || DRAWN.has(id)) return "";
+  seen=new Set(seen); seen.add(id); DRAWN.add(id);
   const p=P(id); if(!p) return "";
-  const ch=kids(id).filter(k=>!seen.has(k));
+  const co = coParents(id);
+  co.forEach(c => DRAWN.add(c));
+  const all = new Set(kids(id));
+  co.forEach(c => kids(c).forEach(k => all.add(k)));
+  const ch = [...all].filter(k => !seen.has(k) && !DRAWN.has(k));
   const collapsed=TREE.collapsed.has(id);
-  const sp=spouses(id).filter(s=>P(s)).map(s=>name(P(s)));
   return `<li>
     <div style="display:flex; align-items:center; gap:6px">
       ${ch.length?`<button class="otog" data-toggle="${esc(id)}">${collapsed?"+":"−"}</button>`:`<span style="width:20px"></span>`}
       <a class="orow" href="#/person/${encodeURIComponent(id)}" style="flex:1">
         ${avatar(p)}
-        <span><span class="nm">${esc(isPrivate(p)?"Private":name(p))}</span>
-        <span class="small muted">${esc([lifespan(p), sp.length?`⚭ ${sp.join(", ")}`:"", ch.length?`${ch.length} ${ch.length===1?"child":"children"}`:""].filter(Boolean).join(" · "))}</span></span>
+        <span><span class="nm">${esc(isPrivate(p)?"Private":name(p))}${
+          co.map(c=>` &amp; ${esc(name(P(c)))}`).join("")}</span>
+        <span class="small muted">${esc([lifespan(p), ch.length?`${ch.length} ${ch.length===1?"child":"children"}`:""].filter(Boolean).join(" · "))}</span></span>
       </a>
     </div>
     ${(ch.length && !collapsed)?`<ul>${ch.map(k=>outlineNode(k,seen)).join("")}</ul>`:""}
@@ -945,7 +991,7 @@ function viewPerson(id){
 
   const lim = isLimited(p);
   const line = lineage(id);
-  const par = parentsOf(p), sib = siblings(id), ch = kids(id), sp = spouses(id).filter(s=>P(s));
+  const par = parentsOf(p), sib = siblings(id), ch = kids(id), sps = spousesOf(p);
   const desc = descendantSet(id);
 
   const crumb = line.length>1
@@ -1005,14 +1051,22 @@ function viewPerson(id){
           : (canContribute() ? `If you remember anything about them, please <a href="#/contribute">add it to the archive</a>.` : "")}</p></section>`;
 
   /* right column */
+  const famBlock = (label, html) =>
+    `<div style="margin-bottom:14px"><div class="small muted" style="margin-bottom:7px">${label}</div>
+     <div class="plist">${html}</div></div>`;
+
+  // A spouse with a record links through to it; one recorded only by name is
+  // shown as a plain chip, because there is nothing to link to.
+  const spouseHtml = sps.map(sp => sp.id
+    ? personChip(sp.id)
+    : `<span class="pchip" style="cursor:default">${avatar(null)}<span>${esc(sp.name)}</span></span>`).join("");
+
   const fam = [
-    ["Parents", par],
-    ["Spouse / partner", sp],
-    ["Siblings", sib],
-    ["Children", ch],
-  ].filter(([,v])=>v.length)
-   .map(([k,v])=>`<div style="margin-bottom:14px"><div class="small muted" style="margin-bottom:7px">${k}</div><div class="plist">${v.map(x=>personChip(x)).join("")}</div></div>`)
-   .join("");
+    par.length ? famBlock("Parents", par.map(x=>personChip(x)).join("")) : "",
+    sib.length ? famBlock("Siblings", sib.map(x=>personChip(x)).join("")) : "",
+    sps.length ? famBlock(spouseLabel(p, sps.length), spouseHtml) : "",
+    ch.length  ? famBlock("Children", ch.map(x=>personChip(x)).join("")) : "",
+  ].join("");
 
   const relSel = `<select id="meSel" style="margin-top:8px">
       <option value="">— choose a person —</option>
@@ -1025,17 +1079,20 @@ function viewPerson(id){
 
   const right = `
     ${section("Family", fam || `<p class="muted small">No relatives recorded yet.</p>`)}
-    ${section("In the tree", `<dl class="dl">
+    ${marriedIn(p) ? "" : section("In the tree", `<dl class="dl">
       ${p.Branch?`<dt>Branch</dt><dd>${esc(p.Branch)}</dd>`:""}
       ${p.Generation?`<dt>Generation</dt><dd>${esc(p.Generation)}</dd>`:""}
       <dt>Descendants</dt><dd>${desc.size}</dd>
     </dl>
     <p style="margin-top:14px"><a class="btn sm" href="#/tree?root=${encodeURIComponent(id)}">See their descendants</a></p>`)}
-    ${canContribute() ? section("Missing someone?",
+    ${marriedIn(p) ? section("In the tree",
+      `<p class="small muted" style="margin:0">${esc(name(p))} married into the family, so does not hold a place in the
+       line of descent. ${sps.length ? `Their place here is beside ${esc(sps.map(x=>x.name).join(" and "))}.` : ""}</p>`) : ""}
+    ${marriedIn(p) ? "" : canContribute() ? section("Missing someone?",
       `<p class="small muted" style="margin:0 0 12px">If you know of a relative who belongs beside ${esc(name(p))} and is
        not here — a child, a brother or sister, a husband or wife — please add them.</p>
        <a class="btn sm primary" href="#/contribute?about=${encodeURIComponent(id)}">Add someone to this family</a>`) : ""}
-    ${section("How am I related?", `<p class="small muted">Pick anyone to see how they connect to ${esc(name(p))}.</p>${relSel}${relOut}`)}
+    ${marriedIn(p) ? "" : section("How am I related?", `<p class="small muted">Pick anyone to see how they connect to ${esc(name(p))}.</p>${relSel}${relOut}`)}
     ${(p.OtherNames||p.Nickname||p.FullName) ? section("Names", `<dl class="dl">
       ${p.FullName?`<dt>Full name</dt><dd>${esc(p.FullName)}</dd>`:""}
       ${p.Nickname?`<dt>Known as</dt><dd>${esc(p.Nickname)}</dd>`:""}
@@ -1053,6 +1110,7 @@ function viewPerson(id){
           ${/^(confirmed|reported) by family$/i.test((p.Status||"").trim())
               ? `<span class="chip ${statusClass(p.Status)}">${esc(p.Status.trim())}</span>` : ""}
           ${p.Generation?`<span class="chip">Generation ${esc(p.Generation)}</span>`:""}
+          ${marriedIn(p)?`<span class="chip">Married into the family</span>`:""}
           ${lim?`<span class="chip">Details withheld — living</span>`:""}
         </div>
       </div>
@@ -1103,10 +1161,12 @@ function viewBrowse(){
       (!b || (p.Branch||"").trim()===b) &&
       (!q || [name(p),p.FullName,p.Nickname,p.OtherNames].join(" ").toLowerCase().includes(q)));
     const byGen={};
-    list.forEach(p=>{ const g=p.Generation||"—"; (byGen[g]=byGen[g]||[]).push(p); });
-    document.getElementById("browseOut").innerHTML = Object.keys(byGen).sort((a,b)=>(+a||99)-(+b||99)).map(g=>`
+    list.forEach(p=>{ const g = marriedIn(p) ? "married-in" : (p.Generation||"—"); (byGen[g]=byGen[g]||[]).push(p); });
+    const order = g => g==="married-in" ? 999 : (+g||99);
+    document.getElementById("browseOut").innerHTML = Object.keys(byGen).sort((a,b)=>order(a)-order(b)).map(g=>`
       <div style="margin-bottom:26px">
-        <div class="sechead"><h2>${g==="—"?"Generation not set":`Generation ${esc(g)}`}</h2><div class="rule"></div>
+        <div class="sechead"><h2>${g==="married-in" ? "Married into the family"
+          : g==="—" ? "Generation not set" : `Generation ${esc(g)}`}</h2><div class="rule"></div>
           <span class="small muted">${byGen[g].length}</span></div>
         <div class="pgrid">${byGen[g].sort((x,y)=>name(x).localeCompare(name(y))).map(p=>`
           <a class="card pcard" href="#/person/${encodeURIComponent(p.PersonID)}">
@@ -1137,6 +1197,7 @@ function viewSearch(params){
       const why=[];
       const nm=[name(p),p.FullName,p.Nickname,p.OtherNames].filter(Boolean).join(" ");
       if(nm.toLowerCase().includes(q)) why.push("name");
+      if(spousesOf(p).some(sp=>sp.name.toLowerCase().includes(q))) why.push("marriage");
       if(!isLimited(p)){
         [["PLACES",r=>[r.Place,r.Country,r.PlaceType]],["OCCUPATIONS",r=>[r.Occupation,r.Employer,r.Specialisation]],
          ["EDUCATION",r=>[r.Institution,r.Qualification,r.Level]],["EVENTS",r=>[r.Title,r.Description]],
@@ -1227,9 +1288,9 @@ function viewContribute(params){
 
     <section class="card pad" style="margin-bottom:16px">
       <div class="sechead"><h2>Someone we have missed</h2><div class="rule"></div></div>
-      <p class="small muted" style="margin:0 0 14px">This record is certainly incomplete. If you know of a relative who
-      is not here — a child, a brother or sister, a parent, a husband or wife — please add them. You only need their
-      name and how they connect to someone already in the tree.</p>
+      <p class="small muted" style="margin:0 0 14px">This record is certainly incomplete. If you know of a relative by
+      blood who is not here — a child, a brother or sister, a parent — please add them. You only need their name and
+      how they connect to someone already in the tree.</p>
       <form id="personForm" class="grid">
         <label class="small">Their name<input name="newName" required placeholder="As the family knew them"></label>
 
@@ -1238,7 +1299,6 @@ function viewContribute(params){
             <select name="relation" required>
               <option value="child of">child of</option>
               <option value="sibling of">brother or sister of</option>
-              <option value="spouse of">husband, wife or partner of</option>
               <option value="parent of">parent of</option>
             </select>
           </label>
@@ -1262,6 +1322,9 @@ function viewContribute(params){
           <label class="small">Died (year), if they have<input name="deathDate"></label>
           <label class="small">Died where?<input name="deathPlace"></label>
         </div>
+
+        <label class="small">Who did they marry? (optional)
+          <input name="spouse" placeholder="Just the name — spouses are recorded but are not part of the line of descent"></label>
 
         <label class="small">Anything else worth recording
           <textarea name="notes" rows="4" placeholder="Their trade, where they lived, their children, a nickname — whatever you know."></textarea></label>
@@ -1344,7 +1407,7 @@ function viewContribute(params){
     relatedId:f.relatedId.value, gender:f.gender.value, living:f.living.value,
     birthDate:f.birthDate.value, birthPlace:f.birthPlace.value,
     deathDate:f.deathDate.value, deathPlace:f.deathPlace.value,
-    notes:f.notes.value, from:f.from.value, contact:f.contact.value
+    spouse:f.spouse.value, notes:f.notes.value, from:f.from.value, contact:f.contact.value
   }), "Thank you — sent for checking. If they are confirmed they will appear in the tree.");
 
   wire("photoForm", "photoMsg", async (f, msg) => {
@@ -1398,6 +1461,7 @@ function viewAdmin(){
                         && !/^no$/i.test((p.Living||"").trim()));
   const needsWork = people.filter(p => /needs clarification/i.test(p.Status||""));
   const pending   = PENDING;
+  const married   = people.filter(p => marriedIn(p));
   const noPhoto   = people.filter(p => !profilePhoto(p));
   const withPhoto = people.length - noPhoto.length;
   const limited   = people.filter(p => isLimited(p) && !isPrivate(p));
@@ -1427,7 +1491,8 @@ function viewAdmin(){
   </p>
 
   <div class="stats" style="margin-bottom:26px">
-    ${stat(people.length,"people")}
+    ${stat(people.length - married.length,"in the line")}
+    ${stat(married.length,"married in")}
     ${stat(withPhoto,"with a photograph")}
     ${stat(approved(DB.STORIES||[]).length,"stories")}
     ${stat(limited.length,"living, screened")}
@@ -1513,6 +1578,9 @@ const BUILD = document.querySelector('meta[name=build]')?.content || "dev";
 let lastCheck = 0;
 
 async function checkForUpdate(){
+  // Only meaningful for a page served over the web; opening the file directly
+  // cannot fetch itself and would log an error for nothing.
+  if(!/^https?:$/.test(location.protocol)) return;
   if(Date.now() - lastCheck < 60000) return;
   lastCheck = Date.now();
   try{
