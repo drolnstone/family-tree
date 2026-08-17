@@ -1015,6 +1015,10 @@ function viewPerson(id){
       <dt>Descendants</dt><dd>${desc.size}</dd>
     </dl>
     <p style="margin-top:14px"><a class="btn sm" href="#/tree?root=${encodeURIComponent(id)}">See their descendants</a></p>`)}
+    ${canContribute() ? section("Missing someone?",
+      `<p class="small muted" style="margin:0 0 12px">If you know of a relative who belongs beside ${esc(name(p))} and is
+       not here — a child, a brother or sister, a husband or wife — please add them.</p>
+       <a class="btn sm primary" href="#/contribute?about=${encodeURIComponent(id)}">Add someone to this family</a>`) : ""}
     ${section("How am I related?", `<p class="small muted">Pick anyone to see how they connect to ${esc(name(p))}.</p>${relSel}${relOut}`)}
     ${(p.OtherNames||p.Nickname||p.FullName) ? section("Names", `<dl class="dl">
       ${p.FullName?`<dt>Full name</dt><dd>${esc(p.FullName)}</dd>`:""}
@@ -1182,66 +1186,172 @@ function viewGallery(){
 }
 
 /* ── contribute ─────────────────────────────────────────────────────── */
-function viewContribute(){
-  if(!CONFIG.APPS_SCRIPT_URL || !isYes(setting("allow_uploads","Yes"))){
+function viewContribute(params){
+  if(!uploadsOpen()){
     app().innerHTML = `<div class="card pad"><h1>Contribute</h1><p class="muted">Submissions are not open yet.
       ${setting("contact_email")?`Please send anything you have to <a href="mailto:${esc(setting("contact_email"))}">${esc(setting("contact_email"))}</a>.`:""}</p></div>`;
     return;
   }
-  const people = Object.values(IX.byId);
+  const about = (params && params.get("about")) || "";
+  const people = Object.values(IX.byId).filter(p=>!isPrivate(p))
+    .sort((a,b)=>name(a).localeCompare(name(b)));
+  const pick = (id, sel) => `<select name="${id}" required>
+      <option value="">— choose a person —</option>
+      ${people.map(p=>`<option value="${esc(p.PersonID)}" ${p.PersonID===sel?"selected":""}>${esc(name(p))}${
+        p.Generation?` · generation ${esc(p.Generation)}`:""}</option>`).join("")}
+    </select>`;
+
   app().innerHTML = `
-    <h1 style="margin-bottom:6px">Contribute to the archive</h1>
-    <p class="muted" style="margin-top:0">Everything you send goes to the administrator for approval before it appears on the site.</p>
+    <h1 style="margin-bottom:6px">Add to the family record</h1>
+    <p class="muted" style="margin-top:0">Everything here comes to the keeper of the archive first. Nothing appears on
+    the site until it has been checked.</p>
+
+    ${about && P(about) ? `<div class="notice" style="margin-bottom:18px">
+      Adding to <strong>${esc(name(P(about)))}</strong>’s part of the family.</div>` : ""}
+
+    <section class="card pad" style="margin-bottom:16px">
+      <div class="sechead"><h2>Someone we have missed</h2><div class="rule"></div></div>
+      <p class="small muted" style="margin:0 0 14px">This record is certainly incomplete. If you know of a relative who
+      is not here — a child, a brother or sister, a parent, a husband or wife — please add them. You only need their
+      name and how they connect to someone already in the tree.</p>
+      <form id="personForm" class="grid">
+        <label class="small">Their name<input name="newName" required placeholder="As the family knew them"></label>
+
+        <div class="grid" style="grid-template-columns:1fr; gap:10px">
+          <label class="small">They are the…
+            <select name="relation" required>
+              <option value="child of">child of</option>
+              <option value="sibling of">brother or sister of</option>
+              <option value="spouse of">husband, wife or partner of</option>
+              <option value="parent of">parent of</option>
+            </select>
+          </label>
+          <label class="small">…this person${pick("relatedId", about)}</label>
+        </div>
+
+        <div class="grid" style="grid-template-columns:1fr 1fr; gap:10px">
+          <label class="small">Man or woman?
+            <select name="gender"><option value="U">not sure</option><option value="M">man</option><option value="F">woman</option></select>
+          </label>
+          <label class="small">Still living?
+            <select name="living"><option value="Unknown">not sure</option><option value="Yes">yes</option><option value="No">no</option></select>
+          </label>
+        </div>
+
+        <div class="grid" style="grid-template-columns:1fr 1fr; gap:10px">
+          <label class="small">Born (year, even roughly)<input name="birthDate" placeholder="e.g. 1948 or c.1950"></label>
+          <label class="small">Born where?<input name="birthPlace" placeholder="Village, town or city"></label>
+        </div>
+        <div class="grid" style="grid-template-columns:1fr 1fr; gap:10px">
+          <label class="small">Died (year), if they have<input name="deathDate"></label>
+          <label class="small">Died where?<input name="deathPlace"></label>
+        </div>
+
+        <label class="small">Anything else worth recording
+          <textarea name="notes" rows="4" placeholder="Their trade, where they lived, their children, a nickname — whatever you know."></textarea></label>
+
+        <div class="grid" style="grid-template-columns:1fr 1fr; gap:10px">
+          <label class="small">Your name<input name="from" required></label>
+          <label class="small">Your email (optional)<input name="contact" type="email" placeholder="So you can be asked more"></label>
+        </div>
+
+        <p class="small muted" style="margin:0">If this person is still living, please check with them before sending
+        their dates or where they live.</p>
+        <button class="btn primary" type="submit">Send for checking</button>
+        <p class="small muted" id="personMsg"></p>
+      </form>
+    </section>
+
     <div class="cols">
       <section class="card pad">
         <div class="sechead"><h2>Add a photograph</h2><div class="rule"></div></div>
         <form id="photoForm" class="grid">
-          <label class="small">Who is it of?<select name="personId" required>${people.map(p=>`<option value="${esc(p.PersonID)}">${esc(name(p))}</option>`).join("")}</select></label>
+          <label class="small">Who is it of?${pick("personId", about)}</label>
           <label class="small">Photograph<input type="file" name="file" accept="image/*" required></label>
           <label class="small">Caption<input name="caption" placeholder="What is happening here?"></label>
           <label class="small">When was it taken?<input name="photoDate" placeholder="e.g. c.1978"></label>
           <label class="small">Where?<input name="place"></label>
           <label class="small">Your name<input name="uploader" required></label>
-          <button class="btn primary" type="submit">Send for approval</button>
+          <button class="btn primary" type="submit">Send for checking</button>
           <p class="small muted" id="photoMsg"></p>
         </form>
       </section>
+
       <section class="card pad">
         <div class="sechead"><h2>Share a story</h2><div class="rule"></div></div>
         <form id="storyForm" class="grid">
-          <label class="small">Who is it about?<select name="personId" required>${people.map(p=>`<option value="${esc(p.PersonID)}">${esc(name(p))}</option>`).join("")}</select></label>
+          <label class="small">Who is it about?${pick("personId", about)}</label>
           <label class="small">Title<input name="title" required></label>
           <label class="small">The story<textarea name="story" rows="7" required></textarea></label>
           <label class="small">Who told it?<input name="toldBy" required placeholder="The person whose account this is"></label>
-          <button class="btn primary" type="submit">Send for approval</button>
+          <button class="btn primary" type="submit">Send for checking</button>
           <p class="small muted" id="storyMsg"></p>
         </form>
       </section>
-    </div>`;
+    </div>
 
-  document.getElementById("photoForm").onsubmit = async ev => {
-    ev.preventDefault();
-    const f=ev.target, msg=document.getElementById("photoMsg");
-    const file=f.file.files[0];
-    if(!file) return;
-    if(file.size > 12*1024*1024){ msg.textContent="That file is larger than 12 MB — please send a smaller version."; return; }
-    msg.textContent="Sending…";
-    const b64 = await new Promise(res=>{ const r=new FileReader(); r.onload=()=>res(String(r.result).split(",")[1]); r.readAsDataURL(file); });
-    const ok = await post({action:"uploadPhoto", personId:f.personId.value, caption:f.caption.value,
+    <section class="card pad" style="margin-top:16px">
+      <div class="sechead"><h2>Something not right?</h2><div class="rule"></div></div>
+      <p class="small muted" style="margin:0 0 14px">A name spelled differently, a wrong parent, a date that cannot be
+      right, two entries for the same person — say so and it will be looked into.</p>
+      <form id="fixForm" class="grid">
+        <label class="small">Which person?${pick("personId", about)}</label>
+        <label class="small">What should be changed?<textarea name="message" rows="4" required
+          placeholder="What the record says now, and what it should say."></textarea></label>
+        <div class="grid" style="grid-template-columns:1fr 1fr; gap:10px">
+          <label class="small">Your name<input name="from" required></label>
+          <label class="small">Your email (optional)<input name="contact" type="email"></label>
+        </div>
+        <button class="btn" type="submit">Send</button>
+        <p class="small muted" id="fixMsg"></p>
+      </form>
+    </section>`;
+
+  const wire = (formId, msgId, build, okText) => {
+    const form = document.getElementById(formId);
+    form.onsubmit = async ev => {
+      ev.preventDefault();
+      const msg = document.getElementById(msgId);
+      const btn = form.querySelector("button[type=submit]");
+      const payload = await build(form, msg);
+      if(!payload) return;
+      btn.disabled = true; msg.textContent = "Sending…";
+      const ok = await post(payload);
+      btn.disabled = false;
+      msg.textContent = ok ? okText : "Something went wrong. Please try again in a moment.";
+      if(ok) form.reset();
+    };
+  };
+
+  wire("personForm", "personMsg", f => ({
+    action:"suggestPerson", newName:f.newName.value, relation:f.relation.value,
+    relatedId:f.relatedId.value, gender:f.gender.value, living:f.living.value,
+    birthDate:f.birthDate.value, birthPlace:f.birthPlace.value,
+    deathDate:f.deathDate.value, deathPlace:f.deathPlace.value,
+    notes:f.notes.value, from:f.from.value, contact:f.contact.value
+  }), "Thank you — sent for checking. If they are confirmed they will appear in the tree.");
+
+  wire("photoForm", "photoMsg", async (f, msg) => {
+    const file = f.file.files[0];
+    if(!file){ msg.textContent = "Please choose a photograph."; return null; }
+    if(file.size > 12*1024*1024){ msg.textContent = "That file is larger than 12 MB — please send a smaller version."; return null; }
+    const data = await new Promise(res=>{ const r=new FileReader(); r.onload=()=>res(String(r.result).split(",")[1]); r.readAsDataURL(file); });
+    return {action:"uploadPhoto", personId:f.personId.value, caption:f.caption.value,
       photoDate:f.photoDate.value, place:f.place.value, uploader:f.uploader.value,
-      filename:file.name, mimeType:file.type, data:b64});
-    msg.textContent = ok ? "Thank you — sent to the administrator for approval." : "Something went wrong. Please try again.";
-    if(ok) f.reset();
-  };
-  document.getElementById("storyForm").onsubmit = async ev => {
-    ev.preventDefault();
-    const f=ev.target, msg=document.getElementById("storyMsg");
-    msg.textContent="Sending…";
-    const ok = await post({action:"addStory", personId:f.personId.value, title:f.title.value, story:f.story.value, toldBy:f.toldBy.value});
-    msg.textContent = ok ? "Thank you — sent to the administrator for approval." : "Something went wrong. Please try again.";
-    if(ok) f.reset();
-  };
+      filename:file.name, mimeType:file.type, data};
+  }, "Thank you — the photograph has been sent for checking.");
+
+  wire("storyForm", "storyMsg", f => ({
+    action:"addStory", personId:f.personId.value, title:f.title.value,
+    story:f.story.value, toldBy:f.toldBy.value
+  }), "Thank you — the story has been sent for checking.");
+
+  wire("fixForm", "fixMsg", f => ({
+    action:"suggestCorrection", personId:f.personId.value,
+    message:f.message.value, from:f.from.value, contact:f.contact.value
+  }), "Thank you — that has been passed on.");
 }
+
 async function post(payload){
   try{
     const r = await fetch(CONFIG.APPS_SCRIPT_URL, {
@@ -1367,7 +1477,7 @@ function route(){
     case "search": viewSearch(params); break;
     case "stories": viewStories(); break;
     case "gallery": viewGallery(); break;
-    case "contribute": viewContribute(); break;
+    case "contribute": viewContribute(params); break;
     case "admin": viewAdmin(); break;              // unlisted; never in the menu
     default: viewHome();
   }
