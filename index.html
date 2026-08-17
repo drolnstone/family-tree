@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="build" content="2026-08-17-2152">
+<meta name="build" content="2026-08-17-2201">
 <title>Odikom Family Tree</title>
 <meta name="description" content="A living record of the Odikom family — ancestry, relationships, places, professions and stories, preserved for the generations still to come.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext y='26' font-size='26'%3E%F0%9F%8C%B3%3C/text%3E%3C/svg%3E">
@@ -533,8 +533,22 @@ const kids = id => IX.kids[(id||"").trim()] || [];
    page and nowhere else: they are never parents, never ancestors, never
    descendants, and never drawn in the tree. Someone marked Bloodline = No has
    married into the family and holds no place in the line at all. */
-const splitIds = v => String(v||"").split(/[;,]/).map(x=>x.trim()).filter(Boolean);
+/* Person IDs never contain a comma, so either separator will do for them.
+   Names frequently do — "Mary Ekpo, née Bassey" is one woman — so names are
+   separated by semicolons only. */
+const splitIds   = v => String(v||"").split(/[;,]/).map(x=>x.trim()).filter(Boolean);
+const splitNames = v => String(v||"").split(/;/).map(x=>x.trim()).filter(Boolean);
 const marriedIn = p => /^no$/i.test(String(p?.Bloodline||"").trim());
+
+/* "Nnyen" and "Nnyen Asim" are the same woman written down twice — once by name
+   in Spouse, once by record in SpouseID. Treat a bare name as already covered
+   when every word of it appears in a spouse who is on the list already. */
+const words = s => String(s||"").toLowerCase().split(/[^\p{L}\p{N}]+/u).filter(Boolean);
+function nameCovered(nm, listed){
+  const w = words(nm);
+  if(!w.length) return false;
+  return listed.some(x => { const set = new Set(words(x.name)); return w.every(t => set.has(t)); });
+}
 
 /**
  * [{id, name}] — id is present only when the spouse has a record of their own.
@@ -554,7 +568,7 @@ function spousesOf(p){
   };
   splitIds(p.SpouseID).forEach(id => { const q=P(id); if(q && id!==me) add(id, name(q)); });
   (IX.marriedTo[me] || []).forEach(id => { const q=P(id); if(q) add(id, name(q)); });
-  splitIds(p.Spouse).forEach(nm => { if(!out.some(x=>x.name===nm)) add(null, nm); });
+  splitNames(p.Spouse).forEach(nm => { if(!nameCovered(nm, out)) add(null, nm); });
   return out;
 }
 /** What to call this person's spouse, given their own gender. */
@@ -690,8 +704,11 @@ function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g, c => ({"&":"&am
 const statusClass = s => /confirmed/i.test(s) ? "status-confirmed" : /reported/i.test(s) ? "status-reported" : "status-unknown";
 function personChip(id, sub){
   const p=P(id); if(!p) return "";
+  // A private record shows as "Private" wherever it is listed, exactly as it
+  // does in the tree. Their own page already refuses to open.
   const s = sub!==undefined ? sub : lifespan(p);
-  return `<a class="pchip" href="#/person/${encodeURIComponent(id)}">${avatar(p)}<span>${esc(name(p))}${s?` <span class="sub">${esc(s)}</span>`:""}</span></a>`;
+  return `<a class="pchip" href="#/person/${encodeURIComponent(id)}">${avatar(p)}<span>${
+    esc(isPrivate(p) ? "Private" : name(p))}${s?` <span class="sub">${esc(s)}</span>`:""}</span></a>`;
 }
 function section(title, html, extra=""){
   if(!html) return "";
@@ -846,7 +863,8 @@ function viewTree(params){
     <div class="treebar noprint">
       <label class="small muted" for="rootSel">Start from</label>
       <select id="rootSel">${inLine.slice().sort((a,b)=>(+a.Generation||99)-(+b.Generation||99) || name(a).localeCompare(name(b)))
-        .map(p=>`<option value="${esc(p.PersonID)}" ${p.PersonID===TREE.root?"selected":""}>${esc(name(p))}${p.Generation?` · gen ${esc(p.Generation)}`:""}</option>`).join("")}</select>
+        .map(p=>`<option value="${esc(p.PersonID)}" ${p.PersonID===TREE.root?"selected":""}>${
+          esc(isPrivate(p) ? "Private" : name(p))}${p.Generation?` · gen ${esc(p.Generation)}`:""}</option>`).join("")}</select>
       <button class="btn sm" id="upBtn" ${parentsOf(P(TREE.root)).length?"":"disabled"}>↑ Up a generation</button>
       ${deepest > 3 ? `<label class="small muted" for="depthSel">Show</label>
         <select id="depthSel">${[3,4,5,6,99].filter(d=>d<=deepest||d===99).map(d=>
@@ -1014,8 +1032,9 @@ function viewPerson(id){
 
   if(isPrivate(p)){
     app().innerHTML = `<div class="card pad"><h1>Private record</h1>
-      <p class="muted">This person's details are not published. They still hold their place in the tree.</p>
-      <p><a class="btn" href="#/tree?root=${encodeURIComponent(id)}">See their place in the tree</a></p></div>`;
+      <p class="muted">This person's details are not published.
+        ${marriedIn(p) ? "They married into the family." : "They still hold their place in the tree."}</p>
+      ${marriedIn(p) ? "" : `<p><a class="btn" href="#/tree?root=${encodeURIComponent(id)}">See their place in the tree</a></p>`}</div>`;
     return;
   }
 
@@ -1100,7 +1119,8 @@ function viewPerson(id){
 
   const relSel = `<select id="meSel" style="margin-top:8px">
       <option value="">— choose a person —</option>
-      ${Object.values(IX.byId).filter(q=>q.PersonID!==id).map(q=>`<option value="${esc(q.PersonID)}" ${ME===q.PersonID?"selected":""}>${esc(name(q))}</option>`).join("")}
+      ${Object.values(IX.byId).filter(q=>q.PersonID!==id && !isPrivate(q))
+        .map(q=>`<option value="${esc(q.PersonID)}" ${ME===q.PersonID?"selected":""}>${esc(name(q))}</option>`).join("")}
     </select>`;
   const relOut = ME && P(ME) ? (() => {
       const r = relationshipTo(ME, id);
@@ -1189,7 +1209,9 @@ function viewBrowse(){
     const b=document.getElementById("bb").value;
     const list = people.filter(p =>
       (!b || (p.Branch||"").trim()===b) &&
-      (!q || [name(p),p.FullName,p.Nickname,p.OtherNames].join(" ").toLowerCase().includes(q)));
+      // Searching matches a spouse's name, so filtering here does too.
+      (!q || [name(p),p.FullName,p.Nickname,p.OtherNames]
+               .concat(spousesOf(p).map(s=>s.name)).join(" ").toLowerCase().includes(q)));
     const byGen={};
     list.forEach(p=>{ const g = marriedIn(p) ? "married-in" : (p.Generation||"—"); (byGen[g]=byGen[g]||[]).push(p); });
     const order = g => g==="married-in" ? 999 : (+g||99);
@@ -1300,7 +1322,9 @@ function viewContribute(params){
     return;
   }
   const about = (params && params.get("about")) || "";
-  const people = Object.values(IX.byId).filter(p=>!isPrivate(p))
+  // Relatives are offered to hang a new person off, and nobody can hang off
+  // someone who married in — a spouse has no place in the line to attach to.
+  const people = Object.values(IX.byId).filter(p=>!isPrivate(p) && !marriedIn(p))
     .sort((a,b)=>name(a).localeCompare(name(b)));
   const pick = (id, sel) => `<select name="${id}" required>
       <option value="">— choose a person —</option>

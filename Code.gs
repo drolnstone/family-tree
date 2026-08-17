@@ -299,11 +299,12 @@ function uploadPhoto_(b) {
     // either way; the administrator can share it by hand at approval time.
   }
 
-  inbox_().appendRow([
-    new Date(), 'Photo', b.personId, personName_(b.personId),
-    b.caption || '', '', file.getId(),
-    b.photoDate || '', b.place || '', b.uploader || 'Anonymous', 'Pending', ''
-  ]);
+  appendInbox_({
+    'When': new Date(), 'Kind': 'Photo', 'PersonID': b.personId, 'Person': personName_(b.personId),
+    'Title': b.caption || '', 'DriveFileID': file.getId(),
+    'PhotoDate': b.photoDate || '', 'Place': b.place || '',
+    'Uploader': b.uploader || 'Anonymous', 'Status': 'Pending'
+  });
   notifyAdmin_('New photograph awaiting approval',
     (b.uploader || 'Someone') + ' submitted a photograph for ' + personName_(b.personId) + '.');
   return { ok: true };
@@ -314,11 +315,11 @@ function addStory_(b) {
   if (!table_('PEOPLE').rows.some(function (r) { return r.PersonID === b.personId; }))
     return { ok: false, error: 'Unknown person.' };
 
-  inbox_().appendRow([
-    new Date(), 'Story', b.personId, personName_(b.personId),
-    b.title || 'Untitled', String(b.story).slice(0, 40000), '',
-    '', '', b.toldBy || '', 'Pending', ''
-  ]);
+  appendInbox_({
+    'When': new Date(), 'Kind': 'Story', 'PersonID': b.personId, 'Person': personName_(b.personId),
+    'Title': b.title || 'Untitled', 'Body': String(b.story).slice(0, 40000),
+    'Uploader': b.toldBy || '', 'Status': 'Pending'
+  });
   notifyAdmin_('New story awaiting approval',
     (b.toldBy || 'Someone') + ' shared a story about ' + personName_(b.personId) + '.');
   return { ok: true };
@@ -346,6 +347,12 @@ function suggestPerson_(b) {
 
   const related = table_('PEOPLE').rows.filter(function (r) { return r.PersonID === clip_(b.relatedId, 20); })[0];
   if (!related) return { ok: false, error: 'Please say who this person is related to.' };
+  // Somebody who married in holds no place in the line, so nobody can be
+  // attached through them. Refusing here beats writing a parent link that the
+  // site will then refuse to follow, leaving the new person stranded.
+  if (marriedIn_(related))
+    return { ok: false, error: (related.DisplayName || related.PersonID) + ' married into the family, so ' +
+             'relatives cannot be added through them. Please choose their husband or wife, or another blood relative.' };
 
   // Blood relations only. Anything else falls back to the safe default.
   const rel = ['child of', 'sibling of', 'parent of'].indexOf(clip_(b.relation, 20)) >= 0
@@ -565,13 +572,8 @@ function recalcGenerations() {
   const col = t.header.indexOf('Generation') + 1;
   if (!col) throw new Error('The PEOPLE sheet has no Generation column.');
 
-  const byId = {}, kids = {};
+  const byId = {};
   t.rows.forEach(function (r) { byId[r.PersonID] = r; });
-  t.rows.forEach(function (r) {
-    [r.FatherID, r.MotherID].forEach(function (p) {
-      if (p && byId[p]) (kids[p] = kids[p] || []).push(r.PersonID);
-    });
-  });
 
   const gen = {};
   t.rows.forEach(function (r) {
@@ -792,6 +794,14 @@ function validateRecord() {
       if (r[k] && !byId[r[k]]) problems.push(r.PersonID + ' has ' + k + ' = ' + r[k] + ', but no such person exists.');
       if (r[k] && r[k] === r.PersonID) problems.push(r.PersonID + ' is recorded as their own parent.');
     });
+    // A mistyped SpouseID is simply ignored by the website — the marriage
+    // vanishes without a word — so it has to be caught here.
+    String(r.SpouseID || '').split(/[;,]/).forEach(function (x) {
+      x = x.trim(); if (!x) return;
+      if (x === r.PersonID) problems.push(r.PersonID + ' is recorded as their own spouse.');
+      else if (!byId[x]) problems.push(r.PersonID + ' has SpouseID = ' + x + ', but no such person exists. ' +
+        'Use the Spouse column for a wife or husband who has no record of their own.');
+    });
     parentsOfRow_(r, byId).forEach(function (pid) {
       const c = yr(r.BirthDate), pb = yr(byId[pid].BirthDate);
       if (c && pb && c <= pb + 12)
@@ -921,6 +931,11 @@ function publishPerson_(r) {
   const t = table_('PEOPLE');
   const related = t.rows.filter(function (x) { return x.PersonID === r.PersonID; })[0];
   if (!related) throw new Error('The person this suggestion hangs off (' + r.PersonID + ') no longer exists.');
+  // Checked again at approval time: the suggestion may predate the guard in
+  // suggestPerson_, or the person may have been marked Bloodline = No since.
+  if (marriedIn_(related))
+    throw new Error((related.DisplayName || related.PersonID) + ' is marked as married into the family, so ' +
+      'nobody can be attached through them. Reject this row, or change who it hangs off, and approve it again.');
 
   const byId = {};
   t.rows.forEach(function (x) { byId[x.PersonID] = x; });
@@ -1032,7 +1047,7 @@ function actOnSelection_(approve) {
     const iStatus = t.header.indexOf('Status') + 1;
     const iPub = t.header.indexOf('Published as') + 1;
     var done = 0, skipped = 0, corrections = 0;
-    const addedPeople = [];
+    const addedPeople = [], refused = [];
 
     for (var r = rng.getRow(); r < rng.getRow() + rng.getNumRows(); r++) {
       if (r === 1) continue;
@@ -1041,7 +1056,11 @@ function actOnSelection_(approve) {
       if (!/^pending$/i.test(hit.Status)) { skipped++; continue; }
 
       if (approve) {
-        const id = publishInboxRow_(hit);
+        // One row that cannot be published must not abandon the rest of the
+        // selection half-approved, so each is dealt with on its own.
+        var id;
+        try { id = publishInboxRow_(hit); }
+        catch (err) { refused.push('row ' + r + ': ' + String(err && err.message || err)); continue; }
         sh.getRange(r, iStatus).setValue('Approved');
         sh.getRange(r, iPub).setValue(id || 'applied by hand');
         if (/^person$/i.test(hit.Kind)) addedPeople.push((hit.Name || id) + ' → ' + id);
@@ -1057,6 +1076,10 @@ function actOnSelection_(approve) {
     ui_().alert(approve ? 'Approved' : 'Rejected',
       done + ' submission(s) ' + (approve ? 'published to the site' : 'rejected') + '.' +
       (skipped ? '\n' + skipped + ' row(s) skipped — they had already been dealt with.' : '') +
+      (refused.length
+        ? '\n\n' + refused.length + ' row(s) could not be published and are still Pending:\n  ' +
+          refused.join('\n  ')
+        : '') +
       (addedPeople.length
         ? '\n\nAdded to PEOPLE:\n  ' + addedPeople.join('\n  ') +
           '\n\nEach new person is marked Living = Yes and Status = Reported by family, and anything\n' +
@@ -1100,7 +1123,7 @@ function rejectSelection()  { actOnSelection_(false); }
  * in PHOTOS/STORIES are visible to every website visitor; this gets them out.
  */
 function migratePendingToInbox() {
-  const box = inbox_();
+  inbox_();
   var moved = 0;
 
   [['PHOTOS', 'Photo'], ['STORIES', 'Story']].forEach(function (spec) {
@@ -1108,11 +1131,13 @@ function migratePendingToInbox() {
     const pending = t.rows.filter(function (r) { return /^pending$/i.test(r.ApprovalStatus); });
     // Delete from the bottom up so earlier row numbers stay valid.
     pending.sort(function (a, b) { return b._row - a._row; }).forEach(function (r) {
-      box.appendRow([
-        r.UploadedAt || r.RecordedDate || new Date(), spec[1], r.PersonID, personName_(r.PersonID),
-        r.Caption || r.Title || '', r.Story || '', r.DriveFileID || '',
-        r.PhotoDate || '', r.Place || '', r.Uploader || r.ToldBy || '', 'Pending', ''
-      ]);
+      appendInbox_({
+        'When': r.UploadedAt || r.RecordedDate || new Date(), 'Kind': spec[1],
+        'PersonID': r.PersonID, 'Person': personName_(r.PersonID),
+        'Title': r.Caption || r.Title || '', 'Body': r.Story || '', 'DriveFileID': r.DriveFileID || '',
+        'PhotoDate': r.PhotoDate || '', 'Place': r.Place || '',
+        'Uploader': r.Uploader || r.ToldBy || '', 'Status': 'Pending'
+      });
       t.sheet.deleteRow(r._row);
       moved++;
     });
