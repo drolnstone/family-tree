@@ -753,9 +753,24 @@ function useSingleParentColumn() {
 
 /** Menu ▸ Check the record for problems. */
 function validateRecord() {
-  const people = table_('PEOPLE').rows;
+  const peopleTable = table_('PEOPLE');
+  const people = peopleTable.rows;
   const byId = {};
   const problems = [], warnings = [];
+
+  // Without these three columns the site does not break — it quietly behaves as
+  // though nobody in the family ever married, and any spouse name approved from
+  // the inbox is dropped on the way in. Silence is the whole problem, so say so.
+  const absent = ['Spouse', 'SpouseID', 'Bloodline'].filter(function (h) {
+    return peopleTable.header.indexOf(h) < 0;
+  });
+  const andOr = function (a) {
+    return a.length < 2 ? a.join('') : a.slice(0, -1).join(', ') + ' or ' + a[a.length - 1];
+  };
+  if (absent.length)
+    problems.push('The PEOPLE sheet has no ' + andOr(absent) + ' column' +
+      (absent.length > 1 ? 's' : '') + '. Marriages cannot be recorded until added — ' +
+      'put ' + (absent.length > 1 ? 'them' : 'it') + ' anywhere in the sheet, spelled exactly as shown here.');
 
   people.forEach(function (r) {
     if (!r.PersonID) { problems.push('A row in PEOPLE has no Person ID (row ' + r._row + ').'); return; }
@@ -813,8 +828,13 @@ function validateRecord() {
   table_('RELATIONSHIPS').rows.forEach(function (r) {
     if (byId[r.Person1ID] && byId[r.Person2ID]) { linked[r.Person1ID] = true; linked[r.Person2ID] = true; }
   });
+  // A marriage attaches a spouse to the family, because that is the only way
+  // they are attached at all. It does NOT attach anyone in the line: being
+  // married is exactly compatible with having been entered without a ParentID,
+  // which is the mistake this check exists to catch.
   people.forEach(function (r) {
-    if (String(r.Spouse || '').trim() || String(r.SpouseID || '').trim()) linked[r.PersonID] = true;
+    if (marriedIn_(r) && (String(r.Spouse || '').trim() || String(r.SpouseID || '').trim()))
+      linked[r.PersonID] = true;
     String(r.SpouseID || '').split(/[;,]/).forEach(function (x) {
       x = x.trim(); if (x && byId[x]) linked[x] = true;
     });
