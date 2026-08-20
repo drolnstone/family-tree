@@ -45,7 +45,7 @@ const TABS = ['PEOPLE','RELATIONSHIPS','PLACES','OCCUPATIONS','EDUCATION',
  * on record, such as the originating couple. FatherID and MotherID are still
  * read so that a sheet which has not yet been renamed keeps working.
  */
-const PARENT_FIELDS = ['ParentID', 'Parent2ID', 'FatherID', 'MotherID'];
+const PARENT_FIELDS = ['FatherID', 'MotherID', 'ParentID', 'Parent2ID'];
 
 /**
  * True for someone who married into the family rather than descending from it.
@@ -55,6 +55,8 @@ const PARENT_FIELDS = ['ParentID', 'Parent2ID', 'FatherID', 'MotherID'];
  * either means a row added by hand with an S id stays out of the line of
  * descent even if nobody remembered to fill in Bloodline.
  */
+function inLine_(id) { return /^P/i.test(String(id || '').trim()); }
+
 function marriedIn_(r) {
   if (!r) return false;
   return /^no$/i.test(String(r.Bloodline || '').trim()) ||
@@ -62,21 +64,33 @@ function marriedIn_(r) {
 }
 
 /** Every parent of a row that actually exists and belongs to the line. */
-function parentsOfRow_(r, byId) {
+/** Both parents as recorded — a wife who married in is still a mother. */
+function allParentsOfRow_(r, byId) {
   const out = [];
   PARENT_FIELDS.forEach(function (f) {
     const v = String(r[f] || '').trim();
-    if (v && v !== r.PersonID && byId[v] && !marriedIn_(byId[v]) && out.indexOf(v) === -1) out.push(v);
+    if (v && v !== r.PersonID && byId[v] && out.indexOf(v) === -1) out.push(v);
   });
   return out;
 }
 
+/** Only the parent who carries the line. Generations and lines follow this. */
+function parentsOfRow_(r, byId) {
+  return allParentsOfRow_(r, byId).filter(function (x) { return inLine_(x); });
+}
+
 /** The parent column to write into: ParentID if the sheet has been renamed. */
 function primaryParentField_(header) {
-  return header.indexOf('ParentID') >= 0 ? 'ParentID' : 'FatherID';
+  return header.indexOf('FatherID') >= 0 ? 'FatherID' : 'ParentID';
 }
 function secondParentField_(header) {
-  return header.indexOf('Parent2ID') >= 0 ? 'Parent2ID' : 'MotherID';
+  return header.indexOf('MotherID') >= 0 ? 'MotherID' : 'Parent2ID';
+}
+
+/** The column a parent of this gender belongs in. */
+function parentFieldFor_(header, gender) {
+  return String(gender || '').toUpperCase() === 'F'
+    ? secondParentField_(header) : primaryParentField_(header);
 }
 
 // ─── Spreadsheet helpers ───────────────────────────────────────────────────
@@ -367,8 +381,9 @@ function suggestPerson_(b) {
 
   // Three blood relations, plus marriage — which attaches a person to the
   // family without putting them in the line. Anything else falls back safely.
-  const rel = ['child of', 'sibling of', 'parent of', 'married to'].indexOf(clip_(b.relation, 20)) >= 0
-    ? clip_(b.relation, 20) : 'child of';
+  var relIn = clip_(b.relation, 20).toLowerCase();
+  if (relIn === 'spouse of' || relIn === 'partner of') relIn = 'married to';   // same thing, said differently
+  const rel = ['child of', 'sibling of', 'parent of', 'married to'].indexOf(relIn) >= 0 ? relIn : 'child of';
   const gender = ['M', 'F', 'U'].indexOf(clip_(b.gender, 1).toUpperCase()) >= 0
     ? clip_(b.gender, 1).toUpperCase() : 'U';
   const living = ['Yes', 'No', 'Unknown'].indexOf(clip_(b.living, 10)) >= 0 ? clip_(b.living, 10) : 'Unknown';
@@ -566,7 +581,6 @@ function onOpen() {
     .addSeparator()
 
     .addItem('Recalculate generations', 'recalcGenerations')
-    .addItem('Name the family branches…', 'assignBranches')
     .addItem('Give IDs to any new rows', 'assignMissingIds')
     .addSeparator()
 
@@ -577,14 +591,13 @@ function onOpen() {
     .addItem('Back up now', 'backupNow')
     .addSubMenu(ui.createMenu('Set up & repair')
       .addItem('Create the Google Drive folders', 'createDriveFolders')
-      .addItem('Turn on nightly backups', 'installNightlyBackup')
+      .addItem('Nightly backups: on / off…', 'toggleNightlyBackup')
       .addItem('Explain what each column is for', 'annotateColumns')
       .addItem('Setup details for the website', 'showSetupDetails')
       .addSeparator()
-      .addItem('Add the marriage columns', 'addMarriageColumns')
       .addItem('Turn spouse names into records', 'spouseNamesToRecords')
       .addItem('Remove the old Spouse name column', 'removeSpouseNameColumn')
-      .addItem('Switch to a single Parent column', 'useSingleParentColumn')
+      .addItem('Update the sheet to the latest layout', 'updateSheetLayout')
       .addItem('Move old pending rows into the inbox', 'migratePendingToInbox'))
     .addToUi();
 }
@@ -647,7 +660,6 @@ function addPersonPrompt() {
     PersonID: id,
     DisplayName: nameAsk.getResponseText().trim() || 'Unknown',
     Gender: 'U',
-    Branch: parent ? (parent.Branch || '') : '',
     Generation: parent && parent.Generation ? (parseInt(parent.Generation, 10) + 1) : '',
     Living: 'Unknown',
     Privacy: 'Public',
@@ -724,163 +736,7 @@ function recalcGenerations() {
   ui_().alert('Generations updated', n + ' row(s) changed.', ui_().ButtonSet.OK);
 }
 
-/**
- * Menu ▸ Name the family branches.
- *
- * Fills in the Branch column for everybody at once. You choose which generation
- * heads the branches; each person in that generation gives their name to a
- * branch, and every one of their descendants inherits the label. People above
- * that generation keep whatever label they already have. Nobody's Person ID,
- * parentage or any other column is touched.
- */
-function assignBranches() {
-  const ui = ui_();
-  const t = table_('PEOPLE');
-  const col = t.header.indexOf('Branch') + 1;
-  if (!col) throw new Error('The PEOPLE sheet has no Branch column.');
 
-  const byId = {}, kids = {};
-  t.rows.forEach(function (r) { if (r.PersonID) byId[r.PersonID] = r; });
-  t.rows.forEach(function (r) {
-    parentsOfRow_(r, byId).forEach(function (p) { (kids[p] = kids[p] || []).push(r.PersonID); });
-  });
-
-  // Work out generations from the data rather than trusting the column.
-  const gen = {};
-  t.rows.forEach(function (r) {
-    if (!parentsOfRow_(r, byId).length) gen[r.PersonID] = 1;
-  });
-  for (var pass = 0; pass < t.rows.length + 2; pass++) {
-    var changed = false;
-    t.rows.forEach(function (r) {
-      const ps = parentsOfRow_(r, byId).filter(function (p) { return gen[p]; });
-      if (!ps.length) return;
-      const want = Math.max.apply(null, ps.map(function (p) { return gen[p]; })) + 1;
-      if (gen[r.PersonID] !== want) { gen[r.PersonID] = want; changed = true; }
-    });
-    if (!changed) break;
-  }
-
-  const deepest = Math.max.apply(null, t.rows.map(function (r) { return gen[r.PersonID] || 1; }));
-  const ask = ui.prompt('Name the family branches',
-    'Each person in the generation you choose gives their name to a branch, and all of their\n' +
-    'descendants get that label.\n\n' +
-    'Generation 2 is usual — the children of the earliest known ancestor.\n' +
-    'Choose 3 for finer branches. Your tree currently runs to generation ' + deepest + '.\n\n' +
-    'Which generation heads the branches?', ui.ButtonSet.OK_CANCEL);
-  if (ask.getSelectedButton() !== ui.Button.OK) return;
-
-  const level = parseInt(ask.getResponseText().trim() || '2', 10);
-  if (isNaN(level) || level < 2) { ui.alert('Please give a generation of 2 or more.'); return; }
-
-  const heads = t.rows.filter(function (r) { return gen[r.PersonID] === level; });
-  if (!heads.length) {
-    ui.alert('Nobody is in generation ' + level + '.',
-      'Run Family Tree ▸ Recalculate generations first, then try again.', ui.ButtonSet.OK);
-    return;
-  }
-
-  // Give every head and its descendants a label. First claim wins, so a person
-  // who descends from two heads keeps the earlier one rather than flickering.
-  const label = {};
-  heads.forEach(function (h) {
-    const nm = (h.DisplayName || h.FullName || h.PersonID).trim();
-    const text = /branch$/i.test(nm) ? nm : nm + ' Branch';
-    const queue = [h.PersonID];
-    while (queue.length) {
-      const cur = queue.shift();
-      if (label[cur]) continue;
-      label[cur] = text;
-      (kids[cur] || []).forEach(function (k) { if (!label[k]) queue.push(k); });
-    }
-  });
-
-  var written = 0, kept = 0, blank = 0, wed = 0;
-  t.rows.forEach(function (r) {
-    if (!r.PersonID) return;
-    // Somebody who married in has no parents here, which would otherwise read as
-    // generation 1 and label them "Founding generation". They take the branch of
-    // whoever they married, set when the record was created; leave it alone.
-    if (marriedIn_(r)) { wed++; return; }
-    if (label[r.PersonID]) {
-      if (String(r.Branch) !== label[r.PersonID]) {
-        t.sheet.getRange(r._row, col).setValue(label[r.PersonID]);
-        written++;
-      }
-    } else if (gen[r.PersonID] && gen[r.PersonID] < level) {
-      if (!String(r.Branch).trim()) {
-        t.sheet.getRange(r._row, col).setValue('Founding generation');
-        written++;
-      } else kept++;
-    } else blank++;
-  });
-
-  const names = heads.map(function (h) {
-    const nm = (h.DisplayName || h.PersonID).trim();
-    return '  ' + (/branch$/i.test(nm) ? nm : nm + ' Branch');
-  });
-  ui.alert('Branches named',
-    names.length + ' branch(es) created from generation ' + level + ':\n' + names.join('\n') + '\n\n' +
-    written + ' row(s) updated' + (kept ? ', ' + kept + ' existing label(s) left alone' : '') +
-    (blank ? ', ' + blank + ' person(s) not connected to any branch yet' : '') +
-    (wed ? ', ' + wed + ' spouse(s) left as they are' : '') + '.\n\n' +
-    'Reload the website to see them.', ui.ButtonSet.OK);
-}
-
-/**
- * Menu ▸ Switch to a single Parent column.
- *
- * Renames FatherID → ParentID and MotherID → Parent2ID. This is a header rename
- * only: every existing value stays exactly where it is, in the same cell, and no
- * Person ID changes. Safe to run once; harmless if run again.
- *
- * The point is that this is a blood-descent tree, so for almost everybody only
- * one parent is a member of the family — the other married in and is not
- * recorded. One ungendered column matches how the sheet is actually used, and it
- * removes the guesswork about which column a parent belongs in.
- */
-function useSingleParentColumn() {
-  const ui = ui_();
-  const t = table_('PEOPLE');
-  const iFather = t.header.indexOf('FatherID');
-  const iMother = t.header.indexOf('MotherID');
-
-  if (iFather < 0 && iMother < 0) {
-    ui.alert('Already done',
-      'This sheet already uses ParentID' +
-      (t.header.indexOf('Parent2ID') >= 0 ? ' and Parent2ID' : '') + '. Nothing to change.',
-      ui.ButtonSet.OK);
-    return;
-  }
-
-  var both = 0, one = 0, none = 0;
-  t.rows.forEach(function (r) {
-    const f = String(r.FatherID || '').trim(), m = String(r.MotherID || '').trim();
-    if (f && m) both++; else if (f || m) one++; else none++;
-  });
-
-  const go = ui.alert('Switch to a single Parent column',
-    'FatherID will be renamed ParentID, and MotherID will be renamed Parent2ID.\n\n' +
-    'Only the two heading cells change. Every value stays in the cell it is in now,\n' +
-    'and no Person ID is touched.\n\n' +
-    'In this sheet right now:\n' +
-    '  ' + one + ' person(s) have one parent recorded — nothing changes for them\n' +
-    '  ' + both + ' person(s) have two — both are kept, in ParentID and Parent2ID\n' +
-    '  ' + none + ' person(s) have none\n\n' +
-    'Back up first if you would rather (Family Tree ▸ Back up now). Go ahead?',
-    ui.ButtonSet.YES_NO);
-  if (go !== ui.Button.YES) return;
-
-  if (iFather >= 0) t.sheet.getRange(1, iFather + 1).setValue('ParentID');
-  if (iMother >= 0) t.sheet.getRange(1, iMother + 1).setValue('Parent2ID');
-
-  ui.alert('Done',
-    'From now on you only need to fill in ParentID — whichever parent is already in the family.\n\n' +
-    'Parent2ID is there for the rare case where both parents are on record, such as the\n' +
-    'originating couple. Leave it blank otherwise.\n\n' +
-    'The website understands both the old and the new names, so nothing breaks either way.',
-    ui.ButtonSet.OK);
-}
 
 /**
  * The three columns a marriage needs, with the note that gets attached to each
@@ -942,26 +798,6 @@ function ensureMarriageColumns_() {
   return missing.map(function (c) { return c[0]; });
 }
 
-/** Menu ▸ Add the marriage columns. */
-function addMarriageColumns() {
-  const ui = ui_();
-  const added = ensureMarriageColumns_();
-  if (!added.length) {
-    ui.alert('Already there',
-      'The PEOPLE sheet already has SpouseID and Bloodline. Nothing needed adding.\n\n' +
-      'Hover over either heading to see what goes in it.', ui.ButtonSet.OK);
-    return;
-  }
-  ui.alert('Marriage columns added',
-    'Added just after the parent columns: ' + added.join(' and ') + '.\n\n' +
-    'Nothing else was touched — no existing column moved, no Person ID changed.\n\n' +
-    'How they are used:\n' +
-    '  SpouseID — the Person ID of the husband or wife.\n' +
-    '  Bloodline — No on the row of anyone who married in.\n\n' +
-    'Each heading carries a note explaining it; hover to read.\n\n' +
-    'Reload the website and open somebody\'s page — a marriage shows in the Family block, ' +
-    'labelled Wife or Husband to match their own gender.', ui.ButtonSet.OK);
-}
 
 /**
  * What every column in PEOPLE is for. Attached to the headings as notes, so the
@@ -986,7 +822,7 @@ const COLUMN_NOTES = {
     'enough; the website reads it from both sides.',
   'Bloodline': 'No = this person married into the family. They keep a page of their own but ' +
     'hold no place in the line of descent. Leave blank for everyone born into the family.',
-  'Branch': 'Which branch of the family they belong to — filled in for everybody at once by ' +
+  'Branch': 'No longer used. Which line someone belongs to is worked out from the tree. ' +
     'Family Tree ▸ Name the family branches. The website groups and filters people by it. ' +
     'Blank simply means that command has not been run yet.',
   'Generation': 'How many generations down from the earliest known ancestor, counting the ' +
@@ -1097,7 +933,6 @@ function makeSpouseRow_(nm, partner, gender, notes) {
     Gender: gender || 'U',
     SpouseID: partner.PersonID,
     Bloodline: 'No',
-    Branch: partner.Branch || '',
     Generation: '',
     Living: 'Unknown',
     Privacy: 'Public',
@@ -1434,7 +1269,20 @@ function showStats() {
   const gens = people.map(function (r) { return parseInt(r.Generation, 10); })
                      .filter(function (n) { return !isNaN(n); });
   const branches = {};
-  people.forEach(function (r) { const b = r.Branch || 'Unassigned'; branches[b] = (branches[b] || 0) + 1; });
+  // Which line someone is on comes from the tree, not from a column.
+  const byId = {}, kids = {};
+  people.forEach(function (r) { byId[r.PersonID] = r; });
+  people.forEach(function (r) {
+    parentsOfRow_(r, byId).forEach(function (x) { (kids[x] = kids[x] || []).push(r.PersonID); });
+  });
+  const root = people.filter(function (r) {
+    return inLine_(r.PersonID) && !parentsOfRow_(r, byId).length;
+  })[0];
+  (root ? (kids[root.PersonID] || []) : []).forEach(function (head) {
+    var n = 0, q = [head];
+    while (q.length) { const c = q.shift(); n++; (kids[c] || []).forEach(function (k) { q.push(k); }); }
+    branches[(byId[head].DisplayName || head) + '\u2019s line'] = n;
+  });
   const unnamed = people.filter(function (r) { return /name unknown/i.test(r.Status) || /^unknown/i.test(r.DisplayName); }).length;
   const married = people.filter(marriedIn_).length;
   const living = people.filter(function (r) { return /^yes$/i.test(r.Living); }).length;
@@ -1509,7 +1357,8 @@ function publishPerson_(r) {
   t.rows.forEach(function (x) { byId[x.PersonID] = x; });
 
   const PARENT = primaryParentField_(t.header);
-  const rel = String(r.Relation || 'child of').toLowerCase();
+  var rel = String(r.Relation || 'child of').toLowerCase();
+  if (rel.indexOf('spouse') === 0 || rel.indexOf('partner') === 0) rel = 'married to';
   const gender = ['M', 'F'].indexOf(String(r.Gender || '').toUpperCase()) >= 0
     ? String(r.Gender).toUpperCase() : 'U';
   const relGen = parseInt(related.Generation, 10);
@@ -1518,12 +1367,16 @@ function publishPerson_(r) {
   var generation = '';
 
   if (rel.indexOf('child') === 0) {
-    fields[PARENT] = related.PersonID;
+      // A mother belongs in MotherID and a father in FatherID.
+      fields[parentFieldFor_(t.header, related.Gender)] = related.PersonID;
     if (!isNaN(relGen)) generation = relGen + 1;
+      if (['M', 'F'].indexOf(String(related.Gender || '').toUpperCase()) < 0)
+        notes.push('The gender of ' + related.PersonID + ' is not recorded, so they were entered as '
+                   + 'the father. Move to ' + secondParentField_(t.header) + ' if that is wrong.');
 
   } else if (rel.indexOf('sibling') === 0) {
-    // Take the same parents as the sibling, whichever columns they sit in.
-    const ps = parentsOfRow_(related, byId);
+    // Take the same parents as the sibling — including a mother who married in.
+    const ps = allParentsOfRow_(related, byId);
     if (ps.length) fields[PARENT] = ps[0];
     if (ps.length > 1) fields[secondParentField_(t.header)] = ps[1];
     if (!ps.length)
@@ -1549,7 +1402,6 @@ function publishPerson_(r) {
     PersonID: id,
     DisplayName: r.Name || 'Unknown',
     Gender: gender,
-    Branch: related.Branch || '',
     Generation: generation,
     BirthDate: r.BirthDate || '',
     BirthPlace: r.BirthPlace || '',
@@ -1596,8 +1448,15 @@ function publishPerson_(r) {
     const SECOND = secondParentField_(t2.header);
     const iNotes = t2.header.indexOf('Notes') + 1;
     if (target) {
-      const free = !String(target[PARENT] || '').trim() ? PARENT
-                 : !String(target[SECOND] || '').trim() ? SECOND : '';
+      // A mother belongs in MotherID and a father in FatherID. When the gender is
+      // known, that is the only column they may go in — a father whose slot is
+      // already taken is a conflict to settle, not someone to file as a mother.
+      // Only an unrecorded gender may fall back to whichever column is free.
+      const want = parentFieldFor_(t2.header, gender);
+      const other = want === PARENT ? SECOND : PARENT;
+      const known = ['M', 'F'].indexOf(gender) >= 0;
+      const free = !String(target[want] || '').trim() ? want
+                 : (!known && !String(target[other] || '').trim()) ? other : '';
       if (free) {
         t2.sheet.getRange(target._row, t2.header.indexOf(free) + 1).setValue(id);
       } else if (iNotes) {
@@ -1804,6 +1663,118 @@ function backupNow() {
   try {
     ui_().alert('Backed up', 'Saved to ' + DRIVE_ROOT_NAME + ' ▸ Backups ▸ ' + blob.getName(), ui_().ButtonSet.OK);
   } catch (err) { /* running from a trigger — no UI available */ }
+}
+
+/**
+ * Menu ▸ Nightly backups: on / off.
+ *
+ * Off by default. A dated copy every night fills the Drive folder with files
+ * that are almost all identical, so the useful pattern is to take a backup when
+ * you actually want one — before a big edit, or to work on the sheet offline.
+ */
+/**
+ * Menu ▸ Update the sheet to the latest layout.
+ *
+ * Brings a live spreadsheet in step with what the website reads:
+ *   • the parent columns become FatherID and MotherID — everyone has both
+ *   • Bloodline retires, because a P or S number already says it
+ *   • Branch retires, because which line someone is on is worked out from the tree
+ *
+ * A column is only ever removed when it is empty. Nothing that holds data is
+ * deleted, no value moves cell, and no ID changes. Safe to run twice.
+ */
+function updateSheetLayout() {
+  const ui = ui_();
+  const sh = sheet_('PEOPLE');
+  var header = sh.getRange(1, 1, 1, Math.max(sh.getLastColumn(), 1)).getValues()[0]
+                 .map(function (h) { return String(h).trim(); });
+  const done = [], warn = [];
+
+  // 1. gendered parent columns: everyone has a father and a mother
+  [['ParentID', 'FatherID'], ['Parent2ID', 'MotherID']].forEach(function (pair) {
+    const i = header.indexOf(pair[0]);
+    if (i >= 0 && header.indexOf(pair[1]) < 0) {
+      sh.getRange(1, i + 1).setValue(pair[1]);
+      header[i] = pair[1];
+      done.push(pair[0] + ' renamed to ' + pair[1]);
+    }
+  });
+
+  // 2. columns the website no longer reads, removed only when empty
+  ['Bloodline', 'Branch'].forEach(function (name) {
+    const i = header.indexOf(name);
+    if (i < 0) return;
+    const last = Math.max(sh.getLastRow() - 1, 0);
+    const used = last
+      ? sh.getRange(2, i + 1, last, 1).getValues()
+          .filter(function (v) { return String(v[0]).trim() !== ''; }).length
+      : 0;
+    if (!used) {
+      sh.deleteColumn(i + 1); header.splice(i, 1);
+      done.push(name + ' removed — it was empty and is no longer read');
+    } else if (name === 'Bloodline') {
+      warn.push(used + ' row(s) still carry a Bloodline value. It is now the P or S in the ' +
+                'ID that decides, so those values are ignored. Clear the column and run this ' +
+                'again to remove it.');
+    } else {
+      warn.push(used + ' row(s) still carry a Branch value. Which line someone is on is worked ' +
+                'out from the tree now, so it is ignored. Clear the column and run this again.');
+    }
+  });
+
+  // 3. anyone married in should carry an S number, or they will show in the tree
+  const strays = table_('PEOPLE').rows.filter(function (r) {
+    return String(r.SpouseID || '').trim() && !inLine_(r.PersonID) === false &&
+           /^no$/i.test(String(r.Bloodline || '').trim());
+  });
+  if (strays.length)
+    warn.push(strays.length + ' person(s) are marked Bloodline = No but still have a P number, ' +
+              'so they would appear in the tree: ' +
+              strays.slice(0, 8).map(function (r) { return r.PersonID; }).join(', ') +
+              '. Give them S numbers.');
+
+  if (!done.length && !warn.length) {
+    ui.alert('Already up to date',
+      'The sheet already matches what the website reads. Nothing needed changing.\n\n' +
+      'If the site still looks unchanged, it is a cached page, not the sheet — open ' +
+      'your site at /#/admin and check the build number shown there.', ui.ButtonSet.OK);
+    return;
+  }
+
+  ui.alert(done.length ? 'Sheet updated' : 'Needs your attention',
+    (done.length ? done.map(function (d) { return '• ' + d; }).join('\n') + '\n\n' : '') +
+    (warn.length ? 'WORTH CHECKING\n' + warn.map(function (w) { return '• ' + w; }).join('\n') + '\n\n' : '') +
+    'No value moved and no ID changed.\n\n' +
+    'A P number means descended from the family; an S number means married into it. ' +
+    'That letter is the only thing deciding who appears in the tree.\n\n' +
+    'Reload the website to see the change.', ui.ButtonSet.OK);
+}
+
+function toggleNightlyBackup() {
+  const ui = ui_();
+  const existing = ScriptApp.getProjectTriggers().filter(function (t) {
+    return t.getHandlerFunction() === 'backupNow';
+  });
+
+  if (existing.length) {
+    existing.forEach(function (t) { ScriptApp.deleteTrigger(t); });
+    ui.alert('Nightly backups are off',
+      'No more backups will be made on their own. Use Family Tree ▸ Back up now whenever ' +
+      'you want a copy — before a big edit, or to work on the sheet offline.\n\n' +
+      'Backups already in Drive are left alone; delete any you do not want.',
+      ui.ButtonSet.OK);
+    return;
+  }
+
+  const go = ui.alert('Turn nightly backups on?',
+    'A dated copy of this spreadsheet will be saved every night, and the most recent ' +
+    KEEP_BACKUPS + ' kept.\n\nMost of them will be identical to each other. Run this again at ' +
+    'any time to switch it back off.', ui.ButtonSet.YES_NO);
+  if (go !== ui.Button.YES) return;
+
+  ScriptApp.newTrigger('backupNow').timeBased().atHour(3).everyDays(1).create();
+  ui.alert('Nightly backups are on', 'One dated copy a night, keeping the most recent ' +
+    KEEP_BACKUPS + '.', ui.ButtonSet.OK);
 }
 
 function installNightlyBackup() {

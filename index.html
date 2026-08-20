@@ -3,23 +3,52 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="build" content="2026-08-18-0008">
+<meta name="build" content="2026-08-20-2132">
 <title>Odikom Family Tree</title>
 <meta name="description" content="A living record of the Odikom family — ancestry, relationships, places, professions and stories, preserved for the generations still to come.">
-<!-- The site's own mark, drawn as shapes rather than an emoji: an emoji favicon
-     depends on a font the desktop browser may not use, which is why it showed on
-     the phone and not the computer. The PNGs are what a phone uses when the site
-     is installed to the home screen. -->
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='5' fill='%23FBF8F3'/%3E%3Cg fill='none' stroke='%233E5C4B' stroke-width='1.7' stroke-linecap='round'%3E%3Cpath d='M12 21v-6'/%3E%3Cpath d='M12 15 7 11'/%3E%3Cpath d='m12 15 5-4'/%3E%3Cpath d='M12 7.2v3'/%3E%3Ccircle cx='12' cy='4.6' r='2.6'/%3E%3Ccircle cx='5.4' cy='10.4' r='2.4'/%3E%3Ccircle cx='18.6' cy='10.4' r='2.4'/%3E%3C/g%3E%3C/svg%3E">
-<link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgBAMAAACBVGfHAAAAMFBMVEX///////z9/Pj8+PT7+PP6+PL69/L59/L59vH49vHy8ezK0MihraNwhXdEYVEoSji/2POuAAAA8klEQVR42mN0YUAFTAzUE3BSgTKYlSDia54YfUBWIb3m1CZkLcyn7L/MMUASYHr4xJ5PASHAos8vvfHjZweYANPPDeaXdUt+T1CACshwdbLaPRWcueAQAwMDCwMD442lshUMTD6+eu83fmBgYmBguSTzqFqAYYXcIVkHmC0fZf7ff8gPs+Wv3hN9G1b/I5/tHl9gYGBWYvivzPPka5KG+9J/Bf8ZGBhdGBiYXj3+8fnhw8JLiQ8gAgyqslx6unLxeusYoAIMDKxHDh/ZgOzbfwpMD1AD6MN/gmEq+AFV4P8DVBV/VYPQDGUrQDPj7wHyoxIAX5tLSWnr4T0AAAAASUVORK5CYII=">
-<link rel="apple-touch-icon" sizes="180x180" href="data:image/png;base64,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">
-<link rel="manifest" id="manifest">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext y='26' font-size='26'%3E%F0%9F%8C%B3%3C/text%3E%3C/svg%3E">
+
+<!-- Installing to a home screen. iOS reads these meta tags directly; Android
+     reads the manifest, which is built at runtime below so that this file stays
+     self-contained. A manifest needs absolute URLs, so they come from
+     location.href — which also means this works from any address you host it at. -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Odikom Tree">
 <meta name="theme-color" content="#FBF8F3" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#131714" media="(prefers-color-scheme: dark)">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Family Tree">
-<meta name="mobile-web-app-capable" content="yes">
+<link rel="apple-touch-icon" id="appleIcon">
+<link rel="manifest" id="manifestLink">
+<script>
+const APP_ICONS = {"i192": "data:image/png;base64,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", "i512": "data:image/png;base64,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", "apple": "data:image/png;base64,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", "maskable": "data:image/png;base64,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"};
+/* Built here rather than shipped as a separate file, so the site stays one
+   document. Called again once SETTINGS has loaded, so renaming the site in the
+   spreadsheet renames the installed app too. */
+function installManifest(title){
+  const here = location.href.split("#")[0].split("?")[0];
+  const dir  = here.replace(/[^/]*$/, "");
+  document.getElementById("appleIcon").href = APP_ICONS.apple;
+  title = (title || "").trim() || "Odikom Family Tree";
+  const manifest = {
+    name: title,
+    short_name: title.replace(/\s*family tree\s*/i, "").trim() || "Family Tree",
+    description: "A living record of our family.",
+    start_url: here, scope: dir, id: dir,
+    display: "standalone", orientation: "any",
+    background_color: "#FBF8F3", theme_color: "#3E5C4B",
+    icons: [
+      { src: APP_ICONS.i192, sizes: "192x192", type: "image/png", purpose: "any" },
+      { src: APP_ICONS.i512, sizes: "512x512", type: "image/png", purpose: "any" },
+      { src: APP_ICONS.maskable, sizes: "192x192", type: "image/png", purpose: "maskable" }
+    ]
+  };
+  const link = document.getElementById("manifestLink");
+  if(link.href && link.href.startsWith("blob:")) URL.revokeObjectURL(link.href);
+  link.href = URL.createObjectURL(new Blob([JSON.stringify(manifest)], {type:"application/manifest+json"}));
+}
+installManifest();
+</script>
 
 <!-- ═══════════════════════════════════════════════════════════════════════
      CONFIGURATION  —  the only part of this file you need to edit.
@@ -113,6 +142,11 @@ main{padding:26px 0 80px; min-height:60vh}
 .chip.status-unknown{background:var(--raise); color:var(--ink-3)}
 .chip.status-reported{background:var(--accent-wash); color:var(--accent-ink); border-color:transparent}
 .chip.status-confirmed{background:var(--green-wash); color:var(--green); border-color:transparent}
+.chip.state-living{background:var(--green-wash); color:var(--green); border-color:transparent}
+.chip.state-gone{background:var(--raise); color:var(--ink-2)}
+/* deceased cards carry a soft left edge so the tree reads at a glance */
+.tnode.is-gone{border-left:3px solid var(--rule)}
+.pcard.is-gone{border-left:3px solid var(--rule)}
 .btn{
   display:inline-flex; align-items:center; gap:7px; padding:8px 15px; border-radius:99px;
   border:1px solid var(--rule); background:var(--card); font-size:.9rem; font-weight:500;
@@ -282,6 +316,14 @@ mark{background:var(--accent-wash); color:var(--accent-ink); border-radius:3px; 
 .spin{width:26px;height:26px;border:2px solid var(--rule); border-top-color:var(--green); border-radius:50%; animation:sp .8s linear infinite}
 @keyframes sp{to{transform:rotate(360deg)}}
 .src{font-size:.76rem; color:var(--ink-3); text-align:center; padding:22px 0 0}
+ol.steps{list-style:none; margin:0; padding:0}
+ol.steps li{display:flex; gap:13px; align-items:flex-start; padding:11px 0; border-bottom:1px solid var(--rule-2)}
+ol.steps li:last-child{border-bottom:0}
+.stepn{
+  flex:0 0 26px; width:26px; height:26px; border-radius:50%; background:var(--green-wash);
+  color:var(--green); font-weight:700; font-size:.82rem; display:grid; place-items:center;
+}
+details > summary{cursor:pointer; color:var(--ink)}
 .updatebar{
   position:fixed; left:50%; bottom:16px; transform:translateX(-50%); z-index:80;
   display:flex; align-items:center; gap:12px; padding:9px 10px 9px 16px; border-radius:99px;
@@ -335,6 +377,7 @@ footer.site{border-top:1px solid var(--rule); padding:24px 0 40px; color:var(--i
       <a href="#/gallery">Photographs</a>
       <a href="#/search">Search</a>
       <a href="#/contribute" id="navContribute" hidden>Contribute</a>
+      <a href="#/install">Install</a>
     </nav>
     <button class="iconbtn" id="themeBtn" title="Switch between light and dark" aria-label="Switch theme">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
@@ -368,7 +411,7 @@ footer.site{border-top:1px solid var(--rule); padding:24px 0 40px; color:var(--i
    built-in sample data below keeps the site working.
    ═════════════════════════════════════════════════════════════════════ */
 
-const SEED = {"PEOPLE":[{"PersonID":"P001","DisplayName":"Unknown Ancestor","FullName":"","OtherNames":"","Nickname":"","Gender":"M","ParentID":"","Parent2ID":"","Spouse":"","SpouseID":"P002","Bloodline":"Yes","Branch":"Obutom","Generation":"1","BirthDate":"","BirthPlace":"Obutom","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"No","Privacy":"Public","ProfilePhoto":"","ShortBio":"Earliest ancestor currently known through family oral history. Reported to have been a clan head of Obutom. His name has not yet been recovered.","Status":"Name unknown","SortOrder":"","Notes":"Ask the elders for his name. Everything below descends from him."},{"PersonID":"P002","DisplayName":"Unknown Wife","FullName":"","OtherNames":"","Nickname":"","Gender":"F","ParentID":"","Parent2ID":"","Spouse":"","SpouseID":"P001","Bloodline":"Yes","Branch":"Obutom","Generation":"1","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"No","Privacy":"Public","ProfilePhoto":"","ShortBio":"Wife of the earliest known ancestor. Her name has not yet been recovered.","Status":"Name unknown","SortOrder":"","Notes":""},{"PersonID":"P003","DisplayName":"Unknown Daughter","FullName":"","OtherNames":"","Nickname":"","Gender":"F","ParentID":"P001","Parent2ID":"P002","Spouse":"","SpouseID":"","Bloodline":"","Branch":"Daughter Branch","Generation":"2","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"No","Privacy":"Public","ProfilePhoto":"","ShortBio":"Daughter of the original ancestors. Her descendants form the Daughter Branch.","Status":"Name unknown","SortOrder":"1","Notes":""},{"PersonID":"P004","DisplayName":"Unknown Son","FullName":"","OtherNames":"","Nickname":"","Gender":"M","ParentID":"P001","Parent2ID":"P002","Spouse":"","SpouseID":"","Bloodline":"","Branch":"Son Branch","Generation":"2","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"No","Privacy":"Public","ProfilePhoto":"","ShortBio":"Son of the original ancestors. His descendants form the Son Branch.","Status":"Name unknown","SortOrder":"2","Notes":""},{"PersonID":"P005","DisplayName":"King of Boys","FullName":"","OtherNames":"","Nickname":"King of Boys","Gender":"M","ParentID":"P003","Parent2ID":"","Spouse":"","SpouseID":"","Bloodline":"","Branch":"Daughter Branch","Generation":"3","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Unknown","Privacy":"Public","ProfilePhoto":"","ShortBio":"","Status":"Reported by family","SortOrder":"1","Notes":"Known to the family by this name. Given name not yet recorded."},{"PersonID":"P006","DisplayName":"Uncle Richard","FullName":"","OtherNames":"","Nickname":"Richard","Gender":"M","ParentID":"P003","Parent2ID":"","Spouse":"","SpouseID":"","Bloodline":"","Branch":"Daughter Branch","Generation":"3","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Unknown","Privacy":"Public","ProfilePhoto":"","ShortBio":"","Status":"Reported by family","SortOrder":"2","Notes":""},{"PersonID":"P007","DisplayName":"Margres","FullName":"","OtherNames":"","Nickname":"","Gender":"U","ParentID":"P003","Parent2ID":"","Spouse":"","SpouseID":"","Bloodline":"","Branch":"Daughter Branch","Generation":"3","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Unknown","Privacy":"Public","ProfilePhoto":"","ShortBio":"","Status":"Reported by family","SortOrder":"3","Notes":"Gender not yet confirmed - please check with the family."},{"PersonID":"P008","DisplayName":"Tennyson","FullName":"","OtherNames":"","Nickname":"","Gender":"M","ParentID":"P004","Parent2ID":"","Spouse":"","SpouseID":"","Bloodline":"","Branch":"Son Branch","Generation":"3","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Unknown","Privacy":"Public","ProfilePhoto":"","ShortBio":"","Status":"Reported by family","SortOrder":"1","Notes":""},{"PersonID":"P009","DisplayName":"Jimmies","FullName":"","OtherNames":"","Nickname":"","Gender":"M","ParentID":"P004","Parent2ID":"","Spouse":"","SpouseID":"","Bloodline":"","Branch":"Son Branch","Generation":"3","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Unknown","Privacy":"Public","ProfilePhoto":"","ShortBio":"","Status":"Reported by family","SortOrder":"2","Notes":""},{"PersonID":"P010","DisplayName":"Tommy","FullName":"","OtherNames":"","Nickname":"","Gender":"M","ParentID":"P004","Parent2ID":"","Spouse":"","SpouseID":"","Bloodline":"","Branch":"Tommy Branch","Generation":"3","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Unknown","Privacy":"Public","ProfilePhoto":"","ShortBio":"","Status":"Reported by family","SortOrder":"3","Notes":""},{"PersonID":"P011","DisplayName":"Benjamin","FullName":"","OtherNames":"","Nickname":"","Gender":"M","ParentID":"P004","Parent2ID":"","Spouse":"","SpouseID":"","Bloodline":"","Branch":"Son Branch","Generation":"3","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Unknown","Privacy":"Public","ProfilePhoto":"","ShortBio":"","Status":"Reported by family","SortOrder":"4","Notes":""},{"PersonID":"P012","DisplayName":"Adam","FullName":"","OtherNames":"","Nickname":"","Gender":"M","ParentID":"P010","Parent2ID":"","Spouse":"","SpouseID":"","Bloodline":"","Branch":"Tommy Branch","Generation":"4","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Unknown","Privacy":"Public","ProfilePhoto":"","ShortBio":"","Status":"Reported by family","SortOrder":"1","Notes":""},{"PersonID":"P013","DisplayName":"Ediboy","FullName":"","OtherNames":"","Nickname":"","Gender":"M","ParentID":"P010","Parent2ID":"","Spouse":"","SpouseID":"","Bloodline":"","Branch":"Ediboy Branch","Generation":"4","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Unknown","Privacy":"Public","ProfilePhoto":"","ShortBio":"","Status":"Reported by family","SortOrder":"2","Notes":""},{"PersonID":"P014","DisplayName":"You (Administrator)","FullName":"","OtherNames":"","Nickname":"","Gender":"U","ParentID":"P013","Parent2ID":"","Spouse":"","SpouseID":"","Bloodline":"","Branch":"Ediboy Branch","Generation":"5","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Yes","Privacy":"Public","ProfilePhoto":"","ShortBio":"Keeper of this family archive.","Status":"Confirmed by family","SortOrder":"1","Notes":"Replace this row with your own name and details."},{"PersonID":"P015","DisplayName":"Sibling 1","FullName":"","OtherNames":"","Nickname":"","Gender":"U","ParentID":"P013","Parent2ID":"","Spouse":"","SpouseID":"","Bloodline":"","Branch":"Ediboy Branch","Generation":"5","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Yes","Privacy":"Public","ProfilePhoto":"","ShortBio":"","Status":"Confirmed by family","SortOrder":"2","Notes":"Replace with the real name."},{"PersonID":"P016","DisplayName":"Sibling 2","FullName":"","OtherNames":"","Nickname":"","Gender":"U","ParentID":"P013","Parent2ID":"","Spouse":"","SpouseID":"","Bloodline":"","Branch":"Ediboy Branch","Generation":"5","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Yes","Privacy":"Public","ProfilePhoto":"","ShortBio":"","Status":"Confirmed by family","SortOrder":"3","Notes":"Replace with the real name."},{"PersonID":"P017","DisplayName":"Sibling 3","FullName":"","OtherNames":"","Nickname":"","Gender":"U","ParentID":"P013","Parent2ID":"","Spouse":"","SpouseID":"","Bloodline":"","Branch":"Ediboy Branch","Generation":"5","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Yes","Privacy":"Public","ProfilePhoto":"","ShortBio":"","Status":"Confirmed by family","SortOrder":"4","Notes":"Replace with the real name."},{"PersonID":"P018","DisplayName":"Sibling 4","FullName":"","OtherNames":"","Nickname":"","Gender":"U","ParentID":"P013","Parent2ID":"","Spouse":"","SpouseID":"","Bloodline":"","Branch":"Ediboy Branch","Generation":"5","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Yes","Privacy":"Public","ProfilePhoto":"","ShortBio":"","Status":"Confirmed by family","SortOrder":"5","Notes":"Replace with the real name."},{"PersonID":"P019","DisplayName":"Your Child","FullName":"","OtherNames":"","Nickname":"","Gender":"U","ParentID":"P014","Parent2ID":"","Spouse":"","SpouseID":"","Bloodline":"","Branch":"Ediboy Branch","Generation":"6","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Yes","Privacy":"Limited","ProfilePhoto":"","ShortBio":"","Status":"Confirmed by family","SortOrder":"1","Notes":"Replace with a real name, or delete the row until there is someone to add."}],"RELATIONSHIPS":[],"PLACES":[{"PlaceRecID":"L001","PersonID":"P001","Place":"Obutom","Country":"Nigeria","PlaceType":"Lived in","FromYear":"","ToYear":"","Notes":"Reported to have been a clan head here. Obutom is the ancestral home of this line.","Status":"Reported by family"}],"OCCUPATIONS":[{"OccRecID":"O001","PersonID":"P001","Occupation":"Clan Head","Specialisation":"","Employer":"","FromYear":"","ToYear":"","Place":"Obutom","Achievements":"Held clan leadership at Obutom.","Notes":"The earliest role recorded in family oral history.","Status":"Reported by family"}],"EDUCATION":[],"EVENTS":[],"PHOTOS":[],"STORIES":[{"StoryID":"S001","PersonID":"P001","Title":"The clan head of Obutom","Story":"Family oral history reports that the earliest ancestor known to this line was a clan head of Obutom. His name has not yet been recovered, and neither has his wife's. Every branch recorded in this archive descends from the two of them.\n\nThis entry is a placeholder for the fuller account. When an elder is able to tell the story properly - his name, the years he lived, how the clan leadership passed on - replace this text with what they say, and record who told it in the ToldBy column.","ToldBy":"","RecordedDate":"","Category":"Oral history","ApprovalStatus":"Approved","Notes":"Placeholder. Replace with a recorded account from an elder."}],"SETTINGS":[{"Key":"site_title","Value":"Odikom Family Tree","Description":"Name shown in the site header and browser tab."},{"Key":"tagline","Value":"Build Once. Grow Forever.","Description":"Line shown under the title on the home page."},{"Key":"root_person_id","Value":"P001","Description":"The person the main tree starts from."},{"Key":"hide_living_details","Value":"Yes","Description":"Yes = show only names and relationships for living people. Strongly recommended while the site is public."},{"Key":"sheet_id","Value":"","Description":"Filled in during setup. The ID of this spreadsheet, taken from its URL."},{"Key":"apps_script_url","Value":"","Description":"Filled in during setup. The /exec URL of the deployed Apps Script web app. Leave blank to hide the upload form."},{"Key":"drive_folder_id","Value":"","Description":"Filled in during setup. The Google Drive folder ID of FAMILY TREE/PEOPLE."},{"Key":"contact_email","Value":"","Description":"Optional. Shown to family members who want to send corrections."},{"Key":"allow_uploads","Value":"Yes","Description":"Yes = family members can submit photographs and stories for approval."},{"Key":"home_intro","Value":"This is a living record of our family. It begins with the ancestors whose names we still hope to recover, and continues through today's generation and the generations still to come. Every branch matters. Every person has a place.","Description":"Paragraph shown on the home page."}]};
+const SEED = {"PEOPLE":[{"PersonID":"P001","DisplayName":"Unknown Ancestor","FullName":"","OtherNames":"","Nickname":"","Gender":"M","FatherID":"","MotherID":"","Spouse":"","SpouseID":"P002","Generation":"Yes","BirthDate":"","BirthPlace":"Obutom","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"No","Privacy":"Public","ProfilePhoto":"","ShortBio":"Earliest ancestor currently known through family oral history. Reported to have been a clan head of Obutom. His name has not yet been recovered.","Status":"Name unknown","SortOrder":"","Notes":"Ask the elders for his name. Everything below descends from him."},{"PersonID":"P002","DisplayName":"Unknown Wife","FullName":"","OtherNames":"","Nickname":"","Gender":"F","FatherID":"","MotherID":"","Spouse":"","SpouseID":"P001","Generation":"Yes","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"No","Privacy":"Public","ProfilePhoto":"","ShortBio":"Wife of the earliest known ancestor. Her name has not yet been recovered.","Status":"Name unknown","SortOrder":"","Notes":""},{"PersonID":"P003","DisplayName":"Unknown Daughter","FullName":"","OtherNames":"","Nickname":"","Gender":"F","FatherID":"P001","MotherID":"P002","Spouse":"","SpouseID":"","Generation":"","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"No","Privacy":"Public","ProfilePhoto":"","ShortBio":"Daughter of the original ancestors. Her descendants form the Daughter Branch.","Status":"Name unknown","SortOrder":"1","Notes":""},{"PersonID":"P004","DisplayName":"Unknown Son","FullName":"","OtherNames":"","Nickname":"","Gender":"M","FatherID":"P001","MotherID":"P002","Spouse":"","SpouseID":"","Generation":"","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"No","Privacy":"Public","ProfilePhoto":"","ShortBio":"Son of the original ancestors. His descendants form the Son Branch.","Status":"Name unknown","SortOrder":"2","Notes":""},{"PersonID":"P005","DisplayName":"King of Boys","FullName":"","OtherNames":"","Nickname":"King of Boys","Gender":"M","FatherID":"","MotherID":"P003","Spouse":"","SpouseID":"","Generation":"","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Unknown","Privacy":"Public","ProfilePhoto":"","ShortBio":"","Status":"Reported by family","SortOrder":"1","Notes":"Known to the family by this name. Given name not yet recorded."},{"PersonID":"P006","DisplayName":"Uncle Richard","FullName":"","OtherNames":"","Nickname":"Richard","Gender":"M","FatherID":"","MotherID":"P003","Spouse":"","SpouseID":"","Generation":"","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Unknown","Privacy":"Public","ProfilePhoto":"","ShortBio":"","Status":"Reported by family","SortOrder":"2","Notes":""},{"PersonID":"P007","DisplayName":"Margres","FullName":"","OtherNames":"","Nickname":"","Gender":"U","FatherID":"","MotherID":"P003","Spouse":"","SpouseID":"","Generation":"","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Unknown","Privacy":"Public","ProfilePhoto":"","ShortBio":"","Status":"Reported by family","SortOrder":"3","Notes":"Gender not yet confirmed - please check with the family."},{"PersonID":"P008","DisplayName":"Tennyson","FullName":"","OtherNames":"","Nickname":"","Gender":"M","FatherID":"P004","MotherID":"","Spouse":"","SpouseID":"","Generation":"","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Unknown","Privacy":"Public","ProfilePhoto":"","ShortBio":"","Status":"Reported by family","SortOrder":"1","Notes":""},{"PersonID":"P009","DisplayName":"Jimmies","FullName":"","OtherNames":"","Nickname":"","Gender":"M","FatherID":"P004","MotherID":"","Spouse":"","SpouseID":"","Generation":"","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Unknown","Privacy":"Public","ProfilePhoto":"","ShortBio":"","Status":"Reported by family","SortOrder":"2","Notes":""},{"PersonID":"P010","DisplayName":"Tommy","FullName":"","OtherNames":"","Nickname":"","Gender":"M","FatherID":"P004","MotherID":"","Spouse":"","SpouseID":"","Generation":"","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Unknown","Privacy":"Public","ProfilePhoto":"","ShortBio":"","Status":"Reported by family","SortOrder":"3","Notes":""},{"PersonID":"P011","DisplayName":"Benjamin","FullName":"","OtherNames":"","Nickname":"","Gender":"M","FatherID":"P004","MotherID":"","Spouse":"","SpouseID":"","Generation":"","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Unknown","Privacy":"Public","ProfilePhoto":"","ShortBio":"","Status":"Reported by family","SortOrder":"4","Notes":""},{"PersonID":"P012","DisplayName":"Adam","FullName":"","OtherNames":"","Nickname":"","Gender":"M","FatherID":"P010","MotherID":"","Spouse":"","SpouseID":"","Generation":"","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Unknown","Privacy":"Public","ProfilePhoto":"","ShortBio":"","Status":"Reported by family","SortOrder":"1","Notes":""},{"PersonID":"P013","DisplayName":"Ediboy","FullName":"","OtherNames":"","Nickname":"","Gender":"M","FatherID":"P010","MotherID":"","Spouse":"","SpouseID":"","Generation":"","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Unknown","Privacy":"Public","ProfilePhoto":"","ShortBio":"","Status":"Reported by family","SortOrder":"2","Notes":""},{"PersonID":"P014","DisplayName":"You (Administrator)","FullName":"","OtherNames":"","Nickname":"","Gender":"U","FatherID":"P013","MotherID":"","Spouse":"","SpouseID":"","Generation":"","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Yes","Privacy":"Public","ProfilePhoto":"","ShortBio":"Keeper of this family archive.","Status":"Confirmed by family","SortOrder":"1","Notes":"Replace this row with your own name and details."},{"PersonID":"P015","DisplayName":"Sibling 1","FullName":"","OtherNames":"","Nickname":"","Gender":"U","FatherID":"P013","MotherID":"","Spouse":"","SpouseID":"","Generation":"","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Yes","Privacy":"Public","ProfilePhoto":"","ShortBio":"","Status":"Confirmed by family","SortOrder":"2","Notes":"Replace with the real name."},{"PersonID":"P016","DisplayName":"Sibling 2","FullName":"","OtherNames":"","Nickname":"","Gender":"U","FatherID":"P013","MotherID":"","Spouse":"","SpouseID":"","Generation":"","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Yes","Privacy":"Public","ProfilePhoto":"","ShortBio":"","Status":"Confirmed by family","SortOrder":"3","Notes":"Replace with the real name."},{"PersonID":"P017","DisplayName":"Sibling 3","FullName":"","OtherNames":"","Nickname":"","Gender":"U","FatherID":"P013","MotherID":"","Spouse":"","SpouseID":"","Generation":"","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Yes","Privacy":"Public","ProfilePhoto":"","ShortBio":"","Status":"Confirmed by family","SortOrder":"4","Notes":"Replace with the real name."},{"PersonID":"P018","DisplayName":"Sibling 4","FullName":"","OtherNames":"","Nickname":"","Gender":"U","FatherID":"P013","MotherID":"","Spouse":"","SpouseID":"","Generation":"","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Yes","Privacy":"Public","ProfilePhoto":"","ShortBio":"","Status":"Confirmed by family","SortOrder":"5","Notes":"Replace with the real name."},{"PersonID":"P019","DisplayName":"Your Child","FullName":"","OtherNames":"","Nickname":"","Gender":"U","FatherID":"P014","MotherID":"","Spouse":"","SpouseID":"","Generation":"","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Yes","Privacy":"Limited","ProfilePhoto":"","ShortBio":"","Status":"Confirmed by family","SortOrder":"1","Notes":"Replace with a real name, or delete the row until there is someone to add."}],"RELATIONSHIPS":[],"PLACES":[{"PlaceRecID":"L001","PersonID":"P001","Place":"Obutom","Country":"Nigeria","PlaceType":"Lived in","FromYear":"","ToYear":"","Notes":"Reported to have been a clan head here. Obutom is the ancestral home of this line.","Status":"Reported by family"}],"OCCUPATIONS":[{"OccRecID":"O001","PersonID":"P001","Occupation":"Clan Head","Specialisation":"","Employer":"","FromYear":"","ToYear":"","Place":"Obutom","Achievements":"Held clan leadership at Obutom.","Notes":"The earliest role recorded in family oral history.","Status":"Reported by family"}],"EDUCATION":[],"EVENTS":[],"PHOTOS":[],"STORIES":[{"StoryID":"S001","PersonID":"P001","Title":"The clan head of Obutom","Story":"Family oral history reports that the earliest ancestor known to this line was a clan head of Obutom. His name has not yet been recovered, and neither has his wife's. Every branch recorded in this archive descends from the two of them.\n\nThis entry is a placeholder for the fuller account. When an elder is able to tell the story properly - his name, the years he lived, how the clan leadership passed on - replace this text with what they say, and record who told it in the ToldBy column.","ToldBy":"","RecordedDate":"","Category":"Oral history","ApprovalStatus":"Approved","Notes":"Placeholder. Replace with a recorded account from an elder."}],"SETTINGS":[{"Key":"site_title","Value":"Odikom Family Tree","Description":"Name shown in the site header and browser tab."},{"Key":"tagline","Value":"Build Once. Grow Forever.","Description":"Line shown under the title on the home page."},{"Key":"root_person_id","Value":"P001","Description":"The person the main tree starts from."},{"Key":"hide_living_details","Value":"Yes","Description":"Yes = show only names and relationships for living people. Strongly recommended while the site is public."},{"Key":"sheet_id","Value":"","Description":"Filled in during setup. The ID of this spreadsheet, taken from its URL."},{"Key":"apps_script_url","Value":"","Description":"Filled in during setup. The /exec URL of the deployed Apps Script web app. Leave blank to hide the upload form."},{"Key":"drive_folder_id","Value":"","Description":"Filled in during setup. The Google Drive folder ID of FAMILY TREE/PEOPLE."},{"Key":"contact_email","Value":"","Description":"Optional. Shown to family members who want to send corrections."},{"Key":"allow_uploads","Value":"Yes","Description":"Yes = family members can submit photographs and stories for approval."},{"Key":"home_intro","Value":"This is a living record of our family. It begins with the ancestors whose names we still hope to recover, and continues through today's generation and the generations still to come. Every branch matters. Every person has a place.","Description":"Paragraph shown on the home page."}]};
 const DB = {};
 const IX = {byId:{}, kids:{}, allKids:{}, sub:{}, marriedTo:{}};
 let SOURCE = "sample";
@@ -482,43 +525,38 @@ const isYes = v => /^(yes|y|true|1)$/i.test(String(v||"").trim());
    one ungendered column. Parent2ID exists only for the rare case where both
    parents are on record, such as the originating couple. FatherID and MotherID
    are still read so a sheet that has not been renamed keeps working. */
-const PARENT_FIELDS = ["ParentID","Parent2ID","FatherID","MotherID"];
+const PARENT_FIELDS = ["FatherID","MotherID","ParentID","Parent2ID"];
+
+/* The ID says it: P001 descends from the family, S001 married into it. That is
+   the only thing that decides who appears in the tree, so there is no separate
+   column to keep in step and no way for the two to disagree. */
+const inLine = id => /^P/i.test(String(id||"").trim());
 
 function buildIndex(){
   IX.byId={}; IX.kids={}; IX.allKids={}; IX.sub={}; IX.marriedTo={};
   (DB.PEOPLE||[]).forEach(p => { if(p.PersonID) IX.byId[p.PersonID.trim()] = p; });
 
   Object.values(IX.byId).forEach(p => {
-    const me = p.PersonID.trim();
-    // kids    — descent, so blood parents only: this is what the tree walks.
-    // allKids — the nuclear family, so a mother who married in counts too.
-    parentsOf(p).forEach(par => (IX.kids[par] = IX.kids[par] || []).push(me));
-    allParents(p).forEach(par => (IX.allKids[par] = IX.allKids[par] || []).push(me));
+    const id = p.PersonID.trim();
+    // IX.kids drives the tree, so it follows only the parent in the line.
+    lineParentsOf(p).forEach(par => (IX.kids[par] = IX.kids[par] || []).push(id));
+    // IX.allKids is the honest record, and is what a profile page shows.
+    parentsOf(p).forEach(par => (IX.allKids[par] = IX.allKids[par] || []).push(id));
+    // A marriage recorded on one row must read correctly from the other.
+    splitIds(p.SpouseID).forEach(sp => {
+      if(sp && sp !== id) (IX.marriedTo[sp] = IX.marriedTo[sp] || []).push(id);
+    });
   });
   // Adoption and guardianship also make someone a parent.
   (DB.RELATIONSHIPS||[]).forEach(r => {
     const t=(r.Type||"").toLowerCase(), a=(r.Person1ID||"").trim(), b=(r.Person2ID||"").trim();
     if(!a || !b) return;
-    // Someone who married in holds no place in the line, however the
-    // relationship is described. Without this, a guardian or step-parent row
-    // would put a spouse back into the tree by the side door.
-    if(marriedIn(IX.byId[a]) || marriedIn(IX.byId[b])) return;
     if(/adoptive parent|guardian|step-parent/.test(t)){
       if(!(IX.kids[a]||[]).includes(b)) (IX.kids[a]=IX.kids[a]||[]).push(b);
     }
   });
   Object.keys(IX.kids).forEach(k => IX.kids[k] = sortSibs(dedupe(IX.kids[k])));
   Object.keys(IX.allKids).forEach(k => IX.allKids[k] = sortSibs(dedupe(IX.allKids[k])));
-
-  // Who has been named as somebody's spouse, looked up the other way round, so
-  // that a marriage need only be written down on one of the two rows.
-  Object.values(IX.byId).forEach(p => {
-    const me = p.PersonID.trim();
-    splitIds(p.SpouseID).forEach(id => {
-      if(!IX.byId[id] || id === me) return;
-      (IX.marriedTo[id] = IX.marriedTo[id] || []).push(me);
-    });
-  });
 
   ["PLACES","OCCUPATIONS","EDUCATION","EVENTS","PHOTOS","STORIES"].forEach(tab => {
     IX.sub[tab] = {};
@@ -545,30 +583,23 @@ function sortSibs(ids){
 /* ── people helpers ─────────────────────────────────────────────────── */
 const P  = id => IX.byId[(id||"").trim()] || null;
 const name = p => (p && (p.DisplayName || p.FullName || p.PersonID)) || "Unknown";
-const kids = id => IX.kids[(id||"").trim()] || [];
+const kids    = id => IX.kids[(id||"").trim()] || [];      // the line, for the tree
+const allKids = id => IX.allKids[(id||"").trim()] || [];  // every child, for a profile
 
-/* Someone who married into the family is a full member of it — their own page,
-   their own photographs, their own stories — but they hold no place in the line
-   of descent. They are never an ancestor, never a descendant, never counted in
-   anybody's lineage, and never drawn in the tree. What they do have is a nuclear
-   family: the husband or wife they married, and the children of that marriage.
+/* A marriage is documentation, not descent. Spouses are shown on a person's
+   page and nowhere else: they are never parents, never ancestors, never
+   descendants, and never drawn in the tree. Someone with an S number married
+   into the family and holds no place in the line at all. */
+const splitIds = v => String(v||"").split(/[;,]/).map(x=>x.trim()).filter(Boolean);
+const marriedIn = p => !!p && !inLine(p.PersonID);
 
-   They are marked by Bloodline = No, and by convention carry an S-prefixed
-   Person ID (S001, S002 …) so they can be told apart at a glance. Either is
-   enough — a row with an S id that nobody remembered to mark stays out of the
-   line, rather than silently becoming an ancestor. */
-/* Person IDs never contain a comma, so either separator will do for them.
-   Names frequently do — "Mary Ekpo, née Bassey" is one woman — so names are
-   separated by semicolons only. */
-const splitIds   = v => String(v||"").split(/[;,]/).map(x=>x.trim()).filter(Boolean);
+/** [{id, name}] — id is present only when the spouse has a record of their own. */
 const splitNames = v => String(v||"").split(/;/).map(x=>x.trim()).filter(Boolean);
-const marriedIn = p => !!p && (/^no$/i.test(String(p.Bloodline||"").trim()) ||
-                               /^S\d/i.test(String(p.PersonID||"").trim()));
-
-/* "Nnyen" and "Nnyen Asim" are the same woman written down twice — once by name
-   in Spouse, once by record in SpouseID. Treat a bare name as already covered
-   when every word of it appears in a spouse who is on the list already. */
 const words = s => String(s||"").toLowerCase().split(/[^\p{L}\p{N}]+/u).filter(Boolean);
+
+/* "Nnyen" and "Nnyen Asim" are the same woman written down twice — once by name,
+   once by record. Treat a bare name as already covered when every word of it
+   appears in a spouse who is on the list already. */
 function nameCovered(nm, listed){
   const w = words(nm);
   if(!w.length) return false;
@@ -603,43 +634,70 @@ function spouseLabel(p, n){
   if(g==="F") return n>1 ? "Husbands" : "Husband";
   return n>1 ? "Spouses" : "Spouse";
 }
-/* Two different questions, and conflating them is what makes spouses go wrong.
-   parentsOf  — who this person DESCENDS from. Blood only. Everything to do with
-                the tree, generations, branches, ancestry and cousinhood uses it.
-   allParents — who RAISED this person: the same list, plus a mother or father
-                who married in. Used only for what a page shows, never for descent. */
-const allParents = p => p
+/** Both parents as recorded — a spouse who married in is still a parent. */
+const parentsOf = p => p
   ? dedupe(PARENT_FIELDS.map(f => (p[f]||"").trim()))
       .filter(x => x && IX.byId[x] && x !== p.PersonID)
   : [];
-const parentsOf = p => allParents(p).filter(x => !marriedIn(IX.byId[x]));
 
-/** The children of this marriage — those who name this person as a parent. */
-const nuclearKids = id => IX.allKids[(id||"").trim()] || [];
+/** Only the parent who carries the line. This is what the tree descends through. */
+const lineParentsOf = p => parentsOf(p).filter(inLine);
 const isPrivate = p => /^private$/i.test(p?.Privacy||"");
 const isLimited = p => isPrivate(p) || (isYes(setting("hide_living_details","Yes")) && isYes(p?.Living));
 function year(s){ const m = String(s||"").match(/\b(\d{4})\b/); return m ? +m[1] : null; }
 function rowsFor(tab,id){ return (IX.sub[tab] && IX.sub[tab][id]) || []; }
 function approved(rows){ return rows.filter(r => !r.ApprovalStatus || /^approved$/i.test(r.ApprovalStatus)); }
 
-/** Anyone who shares a parent — a mother who married in makes siblings too. */
+/** Anyone who shares a parent. */
 function siblings(id){
   const p = P(id); if(!p) return [];
-  const mine = new Set(allParents(p));
+  const mine = new Set(parentsOf(p));
   if(!mine.size) return [];
   return sortSibs(Object.values(IX.byId)
-    .filter(q => q.PersonID !== id && !marriedIn(q))
-    .filter(q => allParents(q).some(x => mine.has(x)))
+    .filter(q => q.PersonID !== id)
+    .filter(q => parentsOf(q).some(x => mine.has(x)))
     .map(q => q.PersonID.trim()));
 }
+/**
+ * Living or gone, with years where the family knows them.
+ *
+ * Someone counts as deceased if Living says No, or if any death detail is on
+ * record at all — a family that has written down where somebody is buried has
+ * told us they have died, whether or not the Living column was ever filled in.
+ * The privacy screen still withholds the dates of the living; that they are
+ * alive is not a private fact, so it is shown.
+ */
+function isDeceased(p){
+  if(!p) return false;
+  if(/^no$/i.test(String(p.Living||"").trim())) return true;
+  return !!(String(p.DeathDate||"").trim() || String(p.DeathPlace||"").trim() ||
+            String(p.BurialPlace||"").trim());
+}
+function lifeState(p){
+  if(!p) return "unknown";
+  if(isDeceased(p)) return "deceased";
+  return isYes(p.Living) ? "living" : "unknown";
+}
+
+/** The short grey line under a name: "1931–1998", "b. 1962", "deceased"… */
 function lifespan(p){
   if(!p) return "";
-  if(isLimited(p)) return "";
+  const state = lifeState(p);
+  if(isLimited(p)) return state === "living" ? "living" : state === "deceased" ? "deceased" : "";
   const b=year(p.BirthDate), d=year(p.DeathDate);
   if(b && d) return `${b}–${d}`;
-  if(b) return isYes(p.Living) ? `b. ${b}` : `b. ${b}`;
   if(d) return `d. ${d}`;
-  return "";
+  if(b) return state === "deceased" ? `b. ${b} · deceased` : `b. ${b}`;
+  return state === "unknown" ? "" : state;
+}
+
+/** The chip on a profile: says plainly whether someone is alive. */
+function lifeChip(p){
+  const state = lifeState(p);
+  if(state === "unknown") return "";
+  if(state === "living") return `<span class="chip state-living">Living</span>`;
+  const d = isLimited(p) ? null : year(p.DeathDate);
+  return `<span class="chip state-gone">${d ? `Died ${d}` : "Deceased"}</span>`;
 }
 function ancestorMap(id){                       // id -> generations upward
   const out=new Map(); const q=[[id,0]]; const seen=new Set([id]);
@@ -674,11 +732,6 @@ const greats = n => n<=0 ? "" : n<=3 ? "great-".repeat(n) : `${n}×great-`;
 
 function relationshipTo(fromId, toId){
   if(!fromId || !toId || fromId===toId) return "";
-  // A mother or father who married in is not in the line, so no amount of
-  // walking the ancestry will find them — but they are still the parent, and
-  // saying "not connected" of somebody's own mother would be absurd.
-  if(allParents(P(toId)).indexOf(fromId) >= 0) return "parent";
-  if(allParents(P(fromId)).indexOf(toId) >= 0) return "child";
   const A = ancestorMap(fromId), B = ancestorMap(toId);
   if(B.has(fromId)){                                  // from is an ancestor of to
     const d=B.get(fromId);
@@ -743,11 +796,8 @@ function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g, c => ({"&":"&am
 const statusClass = s => /confirmed/i.test(s) ? "status-confirmed" : /reported/i.test(s) ? "status-reported" : "status-unknown";
 function personChip(id, sub){
   const p=P(id); if(!p) return "";
-  // A private record shows as "Private" wherever it is listed, exactly as it
-  // does in the tree. Their own page already refuses to open.
   const s = sub!==undefined ? sub : lifespan(p);
-  return `<a class="pchip" href="#/person/${encodeURIComponent(id)}">${avatar(p)}<span>${
-    esc(isPrivate(p) ? "Private" : name(p))}${s?` <span class="sub">${esc(s)}</span>`:""}</span></a>`;
+  return `<a class="pchip" href="#/person/${encodeURIComponent(id)}">${avatar(p)}<span>${esc(name(p))}${s?` <span class="sub">${esc(s)}</span>`:""}</span></a>`;
 }
 function section(title, html, extra=""){
   if(!html) return "";
@@ -760,22 +810,14 @@ function span(a,b){ a=(a||"").trim(); b=(b||"").trim(); return a&&b ? `${a}–${
 const app = () => document.getElementById("app");
 
 /**
- * Group people into branches. Explicit Branch labels win; if the column has not
- * been filled in, the branches are worked out from the tree itself so the home
- * page is useful either way.
+ * The two lines of the family, worked out from the tree rather than stored.
+ *
+ * Which line someone belongs to is decided entirely by which of the earliest
+ * ancestor's children they descend from, so there is nothing to type and
+ * nothing that can fall out of step. A Branch column, if an old sheet still has
+ * one, is ignored.
  */
 function branchGroups(people){
-  const byLabel = {};
-  people.forEach(p => { const b=(p.Branch||"").trim(); if(b) (byLabel[b]=byLabel[b]||[]).push(p); });
-  const labels = Object.keys(byLabel);
-  const earliest = list => list.slice().sort((x,y)=>(+x.Generation||99)-(+y.Generation||99))[0];
-
-  if(labels.length >= 2){
-    return {derived:false, groups: labels
-      .map(b => ({title:b, list:byLabel[b], head:earliest(byLabel[b])}))
-      .sort((a,b)=>b.list.length-a.list.length)};
-  }
-
   const root = P(setting("root_person_id","")) ? setting("root_person_id") : rootMost();
   const groups = kids(root).map(id => {
     const head = P(id);
@@ -820,8 +862,7 @@ function viewHome(){
             ${avatar(g.head)}
             <div style="min-width:0">
               <div class="nm">${esc(g.title)}</div>
-              <div class="small muted">${g.list.length} ${g.list.length===1?"person":"people"}${
-                bg.derived ? "" : ` · from ${esc(name(g.head))}`}</div>
+              <div class="small muted">${g.list.length} ${g.list.length===1?"person":"people"}</div>
             </div>
           </div>
         </a>`).join("")}
@@ -883,10 +924,7 @@ function viewTree(params){
   const people = Object.values(IX.byId);
   if(!people.length){ app().innerHTML = `<p class="muted">No people recorded yet.</p>`; return; }
   const wanted = params.get("root") || TREE.root || setting("root_person_id","");
-  // The tree is a line of descent, so it cannot begin with someone who married
-  // into it — not from a saved link, and not from the selector below.
-  TREE.root = (P(wanted) && !marriedIn(P(wanted))) ? wanted : rootMost();
-  const inLine = people.filter(p => !marriedIn(p));
+  TREE.root = P(wanted) ? wanted : rootMost();
 
   // A big tree squeezed to fit becomes unreadable, so show the top few
   // generations by default and let people open the rest.
@@ -901,9 +939,8 @@ function viewTree(params){
   app().innerHTML = `
     <div class="treebar noprint">
       <label class="small muted" for="rootSel">Start from</label>
-      <select id="rootSel">${inLine.slice().sort((a,b)=>(+a.Generation||99)-(+b.Generation||99) || name(a).localeCompare(name(b)))
-        .map(p=>`<option value="${esc(p.PersonID)}" ${p.PersonID===TREE.root?"selected":""}>${
-          esc(isPrivate(p) ? "Private" : name(p))}${p.Generation?` · gen ${esc(p.Generation)}`:""}</option>`).join("")}</select>
+      <select id="rootSel">${people.slice().sort((a,b)=>(+a.Generation||99)-(+b.Generation||99) || name(a).localeCompare(name(b)))
+        .map(p=>`<option value="${esc(p.PersonID)}" ${p.PersonID===TREE.root?"selected":""}>${esc(name(p))}${p.Generation?` · gen ${esc(p.Generation)}`:""}</option>`).join("")}</select>
       <button class="btn sm" id="upBtn" ${parentsOf(P(TREE.root)).length?"":"disabled"}>↑ Up a generation</button>
       ${deepest > 3 ? `<label class="small muted" for="depthSel">Show</label>
         <select id="depthSel">${[3,4,5,6,99].filter(d=>d<=deepest||d===99).map(d=>
@@ -974,7 +1011,7 @@ function fitTree(){
 }
 function rootMost(){
   const people=Object.values(IX.byId);
-  const roots = people.filter(p=>!parentsOf(p).length && !marriedIn(p));
+  const roots = people.filter(p=>!lineParentsOf(p).length && inLine(p.PersonID));
   const pick = roots.sort((a,b)=>descendantSet(b.PersonID).size-descendantSet(a.PersonID).size)[0] || people[0];
   return pick.PersonID;
 }
@@ -997,7 +1034,7 @@ function drawTree(fit){
 function nodeCard(id, focus){
   const p=P(id); if(!p) return "";
   const ls=lifespan(p);
-  return `<a class="tnode ${focus?"is-focus":""}" href="#/person/${encodeURIComponent(id)}" title="${esc(name(p))}">
+  return `<a class="tnode ${focus?"is-focus":""} ${lifeState(p)==="deceased"?"is-gone":""}" href="#/person/${encodeURIComponent(id)}" title="${esc(name(p))}">
     ${p.Generation?`<span class="gen">${esc(p.Generation)}</span>`:""}
     ${avatar(p)}
     <span class="nm">${esc(isPrivate(p)?"Private":name(p))}</span>
@@ -1015,7 +1052,7 @@ function coParents(id){
   const mine = new Set(kids(id));
   if(!mine.size) return [];
   return Object.values(IX.byId)
-    .filter(q => q.PersonID !== id && !DRAWN.has(q.PersonID) && !marriedIn(q))
+    .filter(q => q.PersonID !== id && !DRAWN.has(q.PersonID) && inLine(q.PersonID))
     .filter(q => kids(q.PersonID).some(k => mine.has(k)))
     .map(q => q.PersonID);
 }
@@ -1071,25 +1108,15 @@ function viewPerson(id){
 
   if(isPrivate(p)){
     app().innerHTML = `<div class="card pad"><h1>Private record</h1>
-      <p class="muted">This person's details are not published.
-        ${marriedIn(p) ? "They married into the family." : "They still hold their place in the tree."}</p>
-      ${marriedIn(p) ? "" : `<p><a class="btn" href="#/tree?root=${encodeURIComponent(id)}">See their place in the tree</a></p>`}</div>`;
+      <p class="muted">This person's details are not published. They still hold their place in the tree.</p>
+      <p><a class="btn" href="#/tree?root=${encodeURIComponent(id)}">See their place in the tree</a></p></div>`;
     return;
   }
 
   const lim = isLimited(p);
-  const wed = marriedIn(p);
-  // Someone who married in has a nuclear family and nothing above it: no
-  // lineage to walk up, no siblings in this family, and only the children of
-  // the marriage. Everyone else sees their parents — including a mother or
-  // father who married in, who belongs on the page even though they are not
-  // part of the descent.
-  const line = wed ? [id] : lineage(id);
-  const par = wed ? [] : allParents(p);
-  const sib = wed ? [] : siblings(id);
-  const ch  = wed ? nuclearKids(id) : kids(id);
-  const sps = spousesOf(p);
-  const desc = wed ? new Set() : descendantSet(id);
+  const line = lineage(id);
+  const par = parentsOf(p), sib = siblings(id), ch = allKids(id), sps = spousesOf(p);
+  const desc = descendantSet(id);
 
   const crumb = line.length>1
     ? `<div class="crumb">${line.map((x,i)=>`${i?'<span class="sep">›</span>':""}<a href="#/person/${encodeURIComponent(x)}">${esc(name(P(x)))}</a>`).join("")}</div>` : "";
@@ -1103,8 +1130,10 @@ function viewPerson(id){
   if(!lim){
     const life = [
       ["Born", [p.BirthDate, p.BirthPlace].filter(Boolean).join(" · ")],
-      ["Died", [p.DeathDate, p.DeathPlace].filter(Boolean).join(" · ")],
+      ["Died", [p.DeathDate, p.DeathPlace].filter(Boolean).join(" · ")
+               || (lifeState(p)==="deceased" ? "Year not recorded" : "")],
       ["Buried", p.BurialPlace],
+      ["Status", lifeState(p)==="living" ? "Living" : ""],
     ].filter(r=>r[1]);
     if(life.length) left += section("Life", `<dl class="dl">${life.map(([k,v])=>`<dt>${k}</dt><dd>${esc(v)}</dd>`).join("")}</dl>`);
   }
@@ -1162,49 +1191,33 @@ function viewPerson(id){
     par.length ? famBlock("Parents", par.map(x=>personChip(x)).join("")) : "",
     sib.length ? famBlock("Siblings", sib.map(x=>personChip(x)).join("")) : "",
     sps.length ? famBlock(spouseLabel(p, sps.length), spouseHtml) : "",
-    ch.length  ? famBlock(wed && sps.length===1 ? `Children with ${esc(sps[0].name)}` : "Children",
-                          ch.map(x=>personChip(x)).join("")) : "",
+    ch.length  ? famBlock("Children", ch.map(x=>personChip(x)).join("")) : "",
   ].join("");
 
   const relSel = `<select id="meSel" style="margin-top:8px">
       <option value="">— choose a person —</option>
-      ${Object.values(IX.byId).filter(q=>q.PersonID!==id && !isPrivate(q))
-        .map(q=>`<option value="${esc(q.PersonID)}" ${ME===q.PersonID?"selected":""}>${esc(name(q))}</option>`).join("")}
+      ${Object.values(IX.byId).filter(q=>q.PersonID!==id).map(q=>`<option value="${esc(q.PersonID)}" ${ME===q.PersonID?"selected":""}>${esc(name(q))}</option>`).join("")}
     </select>`;
   const relOut = ME && P(ME) ? (() => {
       const r = relationshipTo(ME, id);
       return `<p style="margin:10px 0 0"><b>${esc(name(P(ME)))}</b> is ${r?`the <b>${esc(r)}</b> of`:"not connected by blood to"} <b>${esc(name(p))}</b>.</p>`;
     })() : "";
 
-  // A spouse's page stops at the edge of the nuclear family. Everything beyond
-  // it — the branch, the generation, the descendant count, the walk up the
-  // tree, the cousin calculator — belongs to the line of descent, which is not
-  // theirs. What replaces it says so plainly, and points at the family they
-  // joined rather than leaving the column empty.
-  const partner = sps.filter(x=>x.id)[0] || null;
   const right = `
     ${section("Family", fam || `<p class="muted small">No relatives recorded yet.</p>`)}
-    ${wed ? section("In the family", `
-      <p class="small muted" style="margin:0 0 12px">${esc(name(p))} married into the family.
-      ${sps.length ? `Their place here is beside <b>${esc(sps.map(x=>x.name).join(" and "))}</b>` : "Their place here is by marriage"}${
-        ch.length ? `, with ${ch.length} ${ch.length===1?"child":"children"} of that marriage` : ""}.
-      They hold no place in the line of descent, so they have no branch, no generation and no ancestors here.</p>
-      ${partner ? `<p style="margin:0"><a class="btn sm" href="#/tree?root=${encodeURIComponent(partner.id)}">See ${esc(partner.name)}'s place in the tree</a></p>` : ""}`)
-    : section("In the tree", `<dl class="dl">
-      ${p.Branch?`<dt>Branch</dt><dd>${esc(p.Branch)}</dd>`:""}
+    ${marriedIn(p) ? "" : section("In the tree", `<dl class="dl">
       ${p.Generation?`<dt>Generation</dt><dd>${esc(p.Generation)}</dd>`:""}
       <dt>Descendants</dt><dd>${desc.size}</dd>
     </dl>
     <p style="margin-top:14px"><a class="btn sm" href="#/tree?root=${encodeURIComponent(id)}">See their descendants</a></p>`)}
-    ${canContribute() ? section("Missing someone?",
-      wed
-        ? `<p class="small muted" style="margin:0 0 12px">If ${esc(name(p))} had a child who is not here, please add them.
-           Photographs and stories about ${esc(name(p))} are welcome too.</p>
-           <a class="btn sm primary" href="#/contribute?about=${encodeURIComponent(partner ? partner.id : id)}">Add to this family</a>`
-        : `<p class="small muted" style="margin:0 0 12px">If you know of a relative who belongs beside ${esc(name(p))} and is
-           not here — a child, a brother or sister, a husband or wife — please add them.</p>
-           <a class="btn sm primary" href="#/contribute?about=${encodeURIComponent(id)}">Add someone to this family</a>`) : ""}
-    ${wed ? "" : section("How am I related?", `<p class="small muted">Pick anyone to see how they connect to ${esc(name(p))}.</p>${relSel}${relOut}`)}
+    ${marriedIn(p) ? section("In the tree",
+      `<p class="small muted" style="margin:0">${esc(name(p))} married into the family, so does not hold a place in the
+       line of descent. ${sps.length ? `Their place here is beside ${esc(sps.map(x=>x.name).join(" and "))}.` : ""}</p>`) : ""}
+    ${marriedIn(p) ? "" : canContribute() ? section("Missing someone?",
+      `<p class="small muted" style="margin:0 0 12px">If you know of a relative who belongs beside ${esc(name(p))} and is
+       not here — a child, a brother or sister, a parent, a husband or wife — please add them.</p>
+       <a class="btn sm primary" href="#/contribute?about=${encodeURIComponent(id)}">Add someone to this family</a>`) : ""}
+    ${marriedIn(p) ? "" : section("How am I related?", `<p class="small muted">Pick anyone to see how they connect to ${esc(name(p))}.</p>${relSel}${relOut}`)}
     ${(p.OtherNames||p.Nickname||p.FullName) ? section("Names", `<dl class="dl">
       ${p.FullName?`<dt>Full name</dt><dd>${esc(p.FullName)}</dd>`:""}
       ${p.Nickname?`<dt>Known as</dt><dd>${esc(p.Nickname)}</dd>`:""}
@@ -1217,11 +1230,12 @@ function viewPerson(id){
       ${avatar(p)}
       <div class="who">
         <h1>${esc(name(p))}</h1>
-        <p class="muted" style="margin:0">${esc([lifespan(p), p.Branch].filter(Boolean).join(" · ")) || "&nbsp;"}</p>
+        <p class="muted" style="margin:0">${esc(lifespan(p)) || "&nbsp;"}</p>
         <div class="metaline">
           ${/^(confirmed|reported) by family$/i.test((p.Status||"").trim())
               ? `<span class="chip ${statusClass(p.Status)}">${esc(p.Status.trim())}</span>` : ""}
           ${p.Generation?`<span class="chip">Generation ${esc(p.Generation)}</span>`:""}
+          ${lifeChip(p)}
           ${marriedIn(p)?`<span class="chip">Married into the family</span>`:""}
           ${lim?`<span class="chip">Details withheld — living</span>`:""}
         </div>
@@ -1257,23 +1271,22 @@ function lightbox(src, cap){
 /* ── browse ─────────────────────────────────────────────────────────── */
 function viewBrowse(){
   const people = Object.values(IX.byId).filter(p=>!isPrivate(p));
-  const branches = [...new Set(people.map(p=>(p.Branch||"").trim()).filter(Boolean))].sort();
+  const lines = branchGroups(people).groups;
   app().innerHTML = `
     <h1 style="margin-bottom:6px">Everyone on record</h1>
     <p class="muted" style="margin-top:0">${people.length} ${people.length===1?"person":"people"}, grouped by generation.</p>
     <div class="filters noprint">
       <input id="bq" placeholder="Filter by name…" style="min-width:200px">
-      <select id="bb"><option value="">All branches</option>${branches.map(b=>`<option>${esc(b)}</option>`).join("")}</select>
+      <select id="bb"><option value="">Both lines</option>${lines.map((g,i)=>`<option value="${i}">${esc(g.title)}</option>`).join("")}</select>
     </div>
     <div id="browseOut"></div>`;
   const render = () => {
     const q=(document.getElementById("bq").value||"").toLowerCase().trim();
     const b=document.getElementById("bb").value;
+    const inLineFilter = b === "" ? null : new Set(lines[+b].list.map(x=>x.PersonID));
     const list = people.filter(p =>
-      (!b || (p.Branch||"").trim()===b) &&
-      // Searching matches a spouse's name, so filtering here does too.
-      (!q || [name(p),p.FullName,p.Nickname,p.OtherNames]
-               .concat(spousesOf(p).map(s=>s.name)).join(" ").toLowerCase().includes(q)));
+      (!inLineFilter || inLineFilter.has(p.PersonID)) &&
+      (!q || [name(p),p.FullName,p.Nickname,p.OtherNames].join(" ").toLowerCase().includes(q)));
     const byGen={};
     list.forEach(p=>{ const g = marriedIn(p) ? "married-in" : (p.Generation||"—"); (byGen[g]=byGen[g]||[]).push(p); });
     const order = g => g==="married-in" ? 999 : (+g||99);
@@ -1283,9 +1296,9 @@ function viewBrowse(){
           : g==="—" ? "Generation not set" : `Generation ${esc(g)}`}</h2><div class="rule"></div>
           <span class="small muted">${byGen[g].length}</span></div>
         <div class="pgrid">${byGen[g].sort((x,y)=>name(x).localeCompare(name(y))).map(p=>`
-          <a class="card pcard" href="#/person/${encodeURIComponent(p.PersonID)}">
+          <a class="card pcard ${lifeState(p)==="deceased"?"is-gone":""}" href="#/person/${encodeURIComponent(p.PersonID)}">
             ${avatar(p)}<div><div class="nm">${esc(name(p))}</div>
-            <div class="small muted">${esc([lifespan(p), p.Branch].filter(Boolean).join(" · "))||"&nbsp;"}</div></div>
+            <div class="small muted">${esc(lifespan(p))||"&nbsp;"}</div></div>
           </a>`).join("")}</div>
       </div>`).join("") || `<p class="muted">Nobody matches that.</p>`;
   };
@@ -1319,7 +1332,7 @@ function viewSearch(params){
           if(rowsFor(tab,p.PersonID).some(r=>f(r).filter(Boolean).join(" ").toLowerCase().includes(q)))
             why.push(tab.toLowerCase());
         });
-        if([p.BirthPlace,p.DeathPlace,p.BurialPlace,p.ShortBio,p.Branch].filter(Boolean).join(" ").toLowerCase().includes(q))
+        if([p.BirthPlace,p.DeathPlace,p.BurialPlace,p.ShortBio].filter(Boolean).join(" ").toLowerCase().includes(q))
           why.push("profile");
       }
       if(why.length) hits.push([p,[...new Set(why)]]);
@@ -1329,7 +1342,7 @@ function viewSearch(params){
          <div class="pgrid">${hits.map(([p,why])=>`
           <a class="card pcard" href="#/person/${encodeURIComponent(p.PersonID)}">
             ${avatar(p)}<div><div class="nm">${esc(name(p))}</div>
-            <div class="small muted">${esc([lifespan(p),p.Branch].filter(Boolean).join(" · "))}</div>
+            <div class="small muted">${esc(lifespan(p))}</div>
             <div class="small muted" style="margin-top:4px">matched in ${esc(why.join(", "))}</div></div></a>`).join("")}</div>`
       : `<p class="muted">Nothing found for “${esc(q)}”.</p>`;
   };
@@ -1384,23 +1397,13 @@ function viewContribute(params){
     return;
   }
   const about = (params && params.get("about")) || "";
-  const byName = (a,b) => name(a).localeCompare(name(b));
-
-  // Two different lists, because they answer two different questions.
-  // everyone  — who a photograph, a story or a correction can be ABOUT. A wife
-  //             who married in is as much a member of the family as anyone.
-  // blood     — who a new relative can be hung OFF. Only somebody in the line
-  //             has a place in it for a child or a sibling to attach to.
-  const everyone = Object.values(IX.byId).filter(p=>!isPrivate(p)).sort(byName);
-  const blood    = everyone.filter(p=>!marriedIn(p));
-
-  const options = (list, sel) => list.map(p=>`<option value="${esc(p.PersonID)}" ${
-      p.PersonID===sel?"selected":""}>${esc(name(p))}${
-      marriedIn(p) ? " · married in" : p.Generation?` · generation ${esc(p.Generation)}`:""}</option>`).join("");
+  const people = Object.values(IX.byId).filter(p=>!isPrivate(p))
+    .sort((a,b)=>name(a).localeCompare(name(b)));
   const pick = (id, sel) => `<select name="${id}" required>
-      <option value="">— choose a person —</option>${options(everyone, sel)}</select>`;
-  const pickBlood = (id, sel) => `<select name="${id}" required>
-      <option value="">— choose a person —</option>${options(blood, sel)}</select>`;
+      <option value="">— choose a person —</option>
+      ${people.map(p=>`<option value="${esc(p.PersonID)}" ${p.PersonID===sel?"selected":""}>${esc(name(p))}${
+        p.Generation?` · generation ${esc(p.Generation)}`:""}</option>`).join("")}
+    </select>`;
 
   app().innerHTML = `
     <h1 style="margin-bottom:6px">Add to the family record</h1>
@@ -1412,9 +1415,9 @@ function viewContribute(params){
 
     <section class="card pad" style="margin-bottom:16px">
       <div class="sechead"><h2>Someone we have missed</h2><div class="rule"></div></div>
-      <p class="small muted" style="margin:0 0 14px">This record is certainly incomplete. If you know of someone who is
-      not here — a child, a brother or sister, a parent, or the husband or wife of someone already recorded — please
-      add them. You only need their name and how they connect to someone already here.</p>
+      <p class="small muted" style="margin:0 0 14px">This record is certainly incomplete. If you know of a relative who
+      is not here — a child, a brother or sister, a parent, or the husband or wife of someone already on record —
+      please add them. You only need their name and how they connect to someone already here.</p>
       <form id="personForm" class="grid">
         <label class="small">Their name<input name="newName" required placeholder="As the family knew them"></label>
 
@@ -1423,14 +1426,12 @@ function viewContribute(params){
             <select name="relation" required>
               <option value="child of">child of</option>
               <option value="sibling of">brother or sister of</option>
+              <option value="spouse of">husband or wife of</option>
               <option value="parent of">parent of</option>
-              <option value="married to">husband or wife of</option>
             </select>
           </label>
-          <label class="small">…this person${pickBlood("relatedId", about)}</label>
+          <label class="small">…this person${pick("relatedId", about)}</label>
         </div>
-        <p class="small muted" style="margin:-4px 0 0">A husband or wife gets a page of their own, with their
-        photographs and the children of the marriage — but they are not part of the line of descent.</p>
 
         <div class="grid" style="grid-template-columns:1fr 1fr; gap:10px">
           <label class="small">Man or woman?
@@ -1569,39 +1570,123 @@ async function post(payload){
   }catch(e){ console.error(e); return false; }
 }
 
+/* ── install on a phone ─────────────────────────────────────────────
+   Safari and Chrome each have their own way in, and neither is obvious, so
+   the page works out which device you are on and puts that one first.      */
+let INSTALL_PROMPT = null;
+const standalone = () =>
+  matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
 
-/* ── installing the site as an app ──────────────────────────────────────
-   A phone needs a manifest to install a page as a standalone app with a
-   proper icon. This file has to stay a single file, so the manifest is
-   built here and handed to the browser as a blob rather than sitting on
-   the server as a separate download. */
-const ICON_192 = "data:image/png;base64,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";
-const ICON_512 = "data:image/png;base64,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";
-function installManifest(){
-  try{
-    const link = document.getElementById("manifest");
-    if(!link) return;
-    const dir = location.pathname.replace(/[^/]*$/, "");
-    const title = setting("site_title", document.title || "Family Tree");
-    const manifest = {
-      name: title,
-      short_name: title.replace(/\s*family tree\s*/i, "").trim() || "Family Tree",
-      description: "A living record of the family, for the generations still to come.",
-      start_url: dir,
-      scope: dir,
-      display: "standalone",
-      orientation: "any",
-      background_color: "#FBF8F3",
-      theme_color: "#FBF8F3",
-      icons: [
-        { src: ICON_192, sizes: "192x192", type: "image/png", purpose: "any" },
-        { src: ICON_512, sizes: "512x512", type: "image/png", purpose: "any" },
-        { src: ICON_192, sizes: "192x192", type: "image/png", purpose: "maskable" },
-        { src: ICON_512, sizes: "512x512", type: "image/png", purpose: "maskable" }
-      ]
-    };
-    link.href = URL.createObjectURL(new Blob([JSON.stringify(manifest)], {type:"application/manifest+json"}));
-  }catch(err){ /* the site works perfectly well uninstalled */ }
+function device(){
+  const ua = navigator.userAgent;
+  if(/iPad|iPhone|iPod/.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1))
+    return /CriOS|FxiOS|EdgiOS/.test(ua) ? "ios-other" : "ios";
+  if(/Android/.test(ua)) return "android";
+  return "desktop";
+}
+
+const STEP = (n, html) => `<li><span class="stepn">${n}</span><div>${html}</div></li>`;
+
+function viewInstall(){
+  const d = device();
+  const title = setting("site_title","Odikom Family Tree");
+
+  const ios = `
+    ${STEP(1, `Open this site in <strong>Safari</strong>. It has to be Safari — no other browser on an
+      iPhone or iPad is allowed to add an app to the Home Screen.`)}
+    ${STEP(2, `Tap the <strong>Share</strong> button — the square with an arrow coming out of the top.
+      It sits at the bottom of the screen, or top right on an iPad.`)}
+    ${STEP(3, `Scroll down the list and tap <strong>Add to Home Screen</strong>.`)}
+    ${STEP(4, `Tap <strong>Add</strong>. ${esc(title)} appears on your Home Screen with its own icon and
+      opens full screen, with no browser bars.`)}`;
+
+  const android = `
+    ${STEP(1, `Open this site in <strong>Chrome</strong>.`)}
+    ${STEP(2, `Tap the <strong>⋮</strong> menu at the top right.`)}
+    ${STEP(3, `Tap <strong>Add to Home screen</strong> — or <strong>Install app</strong> if that is what
+      you see. They do the same thing.`)}
+    ${STEP(4, `Confirm with <strong>Install</strong>. ${esc(title)} appears on your Home Screen and opens
+      full screen.`)}`;
+
+  const desktop = `
+    ${STEP(1, `Open this site in <strong>Chrome</strong> or <strong>Edge</strong>.`)}
+    ${STEP(2, `Look in the address bar for the install icon — a small screen with a downward arrow — or
+      open the <strong>⋮</strong> menu and choose <strong>Install…</strong>`)}
+    ${STEP(3, `Confirm. It opens in a window of its own, like any other program.`)}`;
+
+  const iosOther = `
+    <div class="notice" style="margin-bottom:14px">You are on an iPhone or iPad but not in Safari. Apple
+    only lets <strong>Safari</strong> add apps to the Home Screen. Open this same address in Safari and the
+    steps below will work.</div>${ios}`;
+
+  const panels = {
+    ios:         ["On an iPhone or iPad", ios],
+    "ios-other": ["On an iPhone or iPad", iosOther],
+    android:     ["On an Android phone", android],
+    desktop:     ["On a computer", desktop],
+  };
+  const others = ["ios","android","desktop"].filter(k => k !== d && !(d === "ios-other" && k === "ios"));
+
+  app().innerHTML = `
+    <h1 style="margin-bottom:6px">Keep the family tree on your phone</h1>
+    <p class="muted" style="margin-top:0">About twenty seconds, and it costs nothing. There is no app store,
+    no account and no download — the tree simply gets its own icon on your Home Screen and opens full
+    screen, like any other app.</p>
+    <p class="small muted" style="margin-top:10px">This is not the same as saving a bookmark. A bookmark
+    opens inside your browser among all your other tabs; this gets its own icon, its own name and opens
+    on its own, with no address bar in the way.</p>
+
+    ${standalone() ? `<div class="card pad" style="margin-bottom:16px; border-color:var(--green)">
+        <h2 style="color:var(--green)">Already installed</h2>
+        <p class="muted" style="margin:8px 0 0">You are looking at the installed app right now.
+        Nothing more to do.</p>
+      </div>` : `
+    <div id="promptWrap"></div>
+    <section class="card pad" style="margin-bottom:16px">
+      <div class="sechead"><h2>${esc(panels[d][0])}</h2><div class="rule"></div>
+        <span class="chip">your device</span></div>
+      <ol class="steps">${panels[d][1]}</ol>
+    </section>
+    ${others.map(k => `<details class="card pad" style="margin-bottom:12px">
+        <summary><strong>${esc(panels[k][0])}</strong></summary>
+        <ol class="steps" style="margin-top:14px">${panels[k][1]}</ol>
+      </details>`).join("")}`}
+
+    <section class="card pad" style="margin-top:16px">
+      <div class="sechead"><h2>Worth knowing</h2><div class="rule"></div></div>
+      <ul class="small" style="padding-left:18px; margin:0; color:var(--ink-2)">
+        <li>It keeps itself up to date. Whenever the family record changes, the app shows the change the
+            next time you open it.</li>
+        <li>It needs a connection to load the family record, so it is no use with no signal at all.</li>
+        <li>To remove it, press and hold the icon and delete it, exactly like any other app.</li>
+      </ul>
+    </section>`;
+
+  if(!standalone()) offerNativeInstall();
+}
+
+/** Chrome hands us a real install prompt. If it has, use it — that is one tap. */
+function offerNativeInstall(){
+  const wrap = document.getElementById("promptWrap");
+  if(!wrap || !INSTALL_PROMPT) return;
+  wrap.innerHTML = `<div class="card pad" style="margin-bottom:16px; border-color:var(--green)">
+      <div class="sechead"><h2>One tap</h2><div class="rule"></div></div>
+      <p class="small muted" style="margin:0 0 12px">Your browser can install it directly — no need for the
+      steps below.</p>
+      <button class="btn primary" id="installBtn">Install ${esc(setting("site_title","the family tree"))}</button>
+      <p class="small muted" id="installMsg" style="margin:10px 0 0"></p>
+    </div>`;
+  document.getElementById("installBtn").onclick = async () => {
+    const prompt = INSTALL_PROMPT;
+    if(!prompt) return;
+    prompt.prompt();
+    const res = await prompt.userChoice.catch(() => ({outcome:"dismissed"}));
+    INSTALL_PROMPT = null;
+    const msg = document.getElementById("installMsg");
+    if(msg) msg.textContent = res.outcome === "accepted"
+      ? "Installed. Look for it on your Home Screen."
+      : "No problem — the steps below do the same thing whenever you are ready.";
+  };
 }
 
 /* ── admin worklist (unlisted: reachable only at #/admin) ────────────
@@ -1619,8 +1704,9 @@ function viewAdmin(){
   const bare      = people.filter(p => !(p.ShortBio||"").trim() && !yr(p.BirthDate) &&
                         !has("PLACES",p.PersonID) && !has("OCCUPATIONS",p.PersonID) &&
                         !has("EDUCATION",p.PersonID) && !has("STORIES",p.PersonID));
-  const noFlag    = people.filter(p => !isYes(p.Living) && !yr(p.DeathDate) && !(p.DeathPlace||"").trim()
-                        && !/^no$/i.test((p.Living||"").trim()));
+  // Nobody has said whether these people are living or dead, so their dates and
+  // places show publicly by default. Worth resolving before sharing the site.
+  const noFlag    = people.filter(p => lifeState(p) === "unknown");
   const needsWork = people.filter(p => /needs clarification/i.test(p.Status||""));
   const pending   = PENDING;
   const married   = people.filter(p => marriedIn(p));
@@ -1722,6 +1808,7 @@ function route(){
     case "stories": viewStories(); break;
     case "gallery": viewGallery(); break;
     case "contribute": viewContribute(params); break;
+    case "install": viewInstall(); break;
     case "admin": viewAdmin(); break;              // unlisted; never in the menu
     default: viewHome();
   }
@@ -1764,6 +1851,11 @@ document.getElementById("themeBtn").onclick = () => {
   document.documentElement.setAttribute("data-theme", now);
 };
 document.getElementById("navToggle").onclick = () => document.getElementById("nav").classList.toggle("open");
+
+// Chrome fires this when the site qualifies for installation. Hold on to it so
+// the Install page can offer one button instead of a list of steps.
+addEventListener("beforeinstallprompt", e => { e.preventDefault(); INSTALL_PROMPT = e; offerNativeInstall(); });
+addEventListener("appinstalled", () => { INSTALL_PROMPT = null; if(location.hash.startsWith("#/install")) route(); });
 if(window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches)
   document.documentElement.setAttribute("data-theme","dark");
 
@@ -1773,9 +1865,8 @@ if(window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches)
   readSettings();
   buildIndex();
   document.getElementById("brandText").textContent = setting("site_title","Odikom Family Tree");
+  installManifest(setting("site_title",""));
   document.getElementById("footNote").textContent = setting("tagline","Build Once. Grow Forever.");
-  document.title = setting("site_title","Odikom Family Tree");
-  installManifest();          // after the settings, so the app takes the family's own name
   if(CONFIG.APPS_SCRIPT_URL && isYes(setting("allow_uploads","Yes")))
     document.getElementById("navContribute").hidden = false;
   console.info(`Odikom Family Tree · build ${BUILD} · source "${SOURCE}" · ${Object.keys(IX.byId).length} people`);
