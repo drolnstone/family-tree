@@ -25,7 +25,7 @@
 // ─── Settings ──────────────────────────────────────────────────────────────
 
 /** Leave blank when the script is bound to the spreadsheet (the normal case). */
-const SCRIPT_BUILD = '2026-08-20-2212';
+const SCRIPT_BUILD = '2026-08-21-2041';
 const SHEET_ID = '';
 
 /** Name of the top-level Google Drive folder holding the family media. */
