@@ -25,6 +25,7 @@
 // ─── Settings ──────────────────────────────────────────────────────────────
 
 /** Leave blank when the script is bound to the spreadsheet (the normal case). */
+const SCRIPT_BUILD = '2026-08-20-2212';
 const SHEET_ID = '';
 
 /** Name of the top-level Google Drive folder holding the family media. */
@@ -594,11 +595,7 @@ function onOpen() {
       .addItem('Nightly backups: on / off…', 'toggleNightlyBackup')
       .addItem('Explain what each column is for', 'annotateColumns')
       .addItem('Setup details for the website', 'showSetupDetails')
-      .addSeparator()
-      .addItem('Turn spouse names into records', 'spouseNamesToRecords')
-      .addItem('Remove the old Spouse name column', 'removeSpouseNameColumn')
-      .addItem('Update the sheet to the latest layout', 'updateSheetLayout')
-      .addItem('Move old pending rows into the inbox', 'migratePendingToInbox'))
+      .addItem('Update the sheet to the latest layout', 'updateSheetLayout'))
     .addToUi();
 }
 
@@ -688,18 +685,38 @@ function assignMissingIds() {
     ['PHOTOS','PhotoID','F'], ['STORIES','StoryID','S']
   ];
   var filled = 0;
+  const married = [];
   specs.forEach(function (s) {
     const t = table_(s[0]);
     const col = t.header.indexOf(s[1]) + 1;
     if (!col) return;
     t.rows.forEach(function (r) {
-      if (!r[s[1]]) {
-        t.sheet.getRange(r._row, col).setValue(nextId_(s[0], s[1], s[2], 3));
-        filled++;
+      if (r[s[1]]) return;
+      // In PEOPLE the letter is not decoration: P puts somebody in the line of
+      // descent and S keeps them out of it, and an ID is never changed once
+      // given. Somebody with a husband or wife and no parents of their own is
+      // somebody who married in, and must not be handed a P by default.
+      var letter = s[2];
+      if (s[0] === 'PEOPLE' && String(r.SpouseID || '').trim() &&
+          !PARENT_FIELDS.some(function (f) { return String(r[f] || '').trim(); })) {
+        letter = 'S';
+        married.push(r.DisplayName || 'row ' + r._row);
       }
+      t.sheet.getRange(r._row, col).setValue(nextId_(s[0], s[1], letter, 3));
+      filled++;
     });
   });
-  ui_().alert('Done', filled ? ('Gave IDs to ' + filled + ' row(s).') : 'Every row already has an ID.', ui_().ButtonSet.OK);
+  ui_().alert('Done',
+    (filled ? 'Gave IDs to ' + filled + ' row(s).' : 'Every row already has an ID.') +
+    (married.length
+      ? '\n\n' + married.length + ' of them had a husband or wife and no parents, so they were ' +
+        'given S numbers rather than P: ' + married.slice(0, 8).join(', ') +
+        (married.length > 8 ? ' and ' + (married.length - 8) + ' more' : '') + '.\n\n' +
+        'An S number keeps somebody out of the line of descent while still giving them a page ' +
+        'of their own. If any of them was in fact born into the family, tell me before you go ' +
+        'further — an ID is the one thing this record never changes afterwards.'
+      : ''),
+    ui_().ButtonSet.OK);
 }
 
 /** Menu ▸ Recalculate generations. Generation 1 is anyone with no known parent. */
@@ -739,24 +756,25 @@ function recalcGenerations() {
 
 
 /**
- * The three columns a marriage needs, with the note that gets attached to each
+ * The one column a marriage needs, with the note that gets attached to the
  * heading so the sheet explains itself without anybody having to remember.
+ *
+ * There used to be two. Bloodline was the other, and it is gone: the letter in
+ * the Person ID already says whether somebody was born into the family or
+ * married into it, and a column that can disagree with an ID is a column that
+ * will, eventually, disagree with an ID.
  */
 const MARRIAGE_COLUMNS = [
   ['SpouseID',
    'Only for a wife or husband who deserves a record of their own — a photograph, where they ' +
-   'came from, their story. Put their Person ID here, and give them a row of their own with ' +
-   'Bloodline set to No. Recording the marriage on either row is enough; you need not do both.'],
-  ['Bloodline',
-   'No = this person married into the family. They will never appear in the tree, never count ' +
-   'as anybody\'s ancestor or descendant, and cannot be given as a parent. Leave it blank for ' +
-   'everyone born into the family.']
+   'came from, their story. Put their Person ID here, and give them a row of their own with an ' +
+   'S number. Recording the marriage on either row is enough; you need not do both.']
 ];
 
 /**
- * Add whatever is missing of the three, on the end, matching the look of the
- * headings already there. Additive and safe to run again; no existing column,
- * value or Person ID is touched.
+ * Add it if it is missing, matching the look of the headings already there.
+ * Additive and safe to run again; no existing column, value or Person ID is
+ * touched.
  */
 function ensureMarriageColumns_() {
   const sh = sheet_('PEOPLE');
@@ -768,7 +786,8 @@ function ensureMarriageColumns_() {
   // They belong with the other family columns, immediately after the parents —
   // which is where the sample workbook puts them. Only if there is no parent
   // column to anchor to do they go on the end.
-  // Keep the three together: if one is already in place, the others join it.
+  // Sit it beside whatever marriage or parent column is already there, so it
+  //  reads as part of the family block rather than bolted on at the far end.
   const anchor = Math.max(
     have.indexOf('Bloodline'), have.indexOf('SpouseID'), have.indexOf('Spouse'),
     have.indexOf('Parent2ID'), have.indexOf('MotherID'),
@@ -781,20 +800,9 @@ function ensureMarriageColumns_() {
 
   missing.forEach(function (c, i) {
     sh.getRange(1, at + i).setNote(c[1]);
-    try { sh.setColumnWidth(at + i, c[0] === 'Bloodline' ? 100 : 150); } catch (err) {}
+    try { sh.setColumnWidth(at + i, 150); } catch (err) {}
   });
 
-  // A Yes/No list on Bloodline, permissive so that a blank cell stays legal —
-  // blank is the normal case and means "born into the family".
-  const iB = missing.map(function (c) { return c[0]; }).indexOf('Bloodline');
-  if (iB >= 0) {
-    try {
-      const rule = SpreadsheetApp.newDataValidation()
-        .requireValueInList(['Yes', 'No'], true).setAllowInvalid(true)
-        .setHelpText('No = married into the family. Blank or Yes = born into it.').build();
-      sh.getRange(2, at + iB, Math.max(sh.getMaxRows() - 1, 1)).setDataValidation(rule);
-    } catch (err) {}
-  }
   return missing.map(function (c) { return c[0]; });
 }
 
@@ -814,17 +822,25 @@ const COLUMN_NOTES = {
   'Nickname': 'What they were called.',
   'Gender': 'M, F or U for unknown. Decides the silhouette shown when there is no photograph, ' +
     'and whether a marriage reads Wife or Husband.',
-  'ParentID': 'The Person ID of the parent through whom this person belongs to the family. ' +
-    'This single column is what builds the whole tree.',
-  'Parent2ID': 'The other parent, when they are also on record — usually the mother who ' +
-    'married in. Shown on the page, but descent is reckoned through ParentID alone.',
+  'FatherID': 'The Person ID of the father. Everyone has a father and a mother, whether the ' +
+    'family line runs through him or through her — the P or S in his ID decides that, not this ' +
+    'column.',
+  'MotherID': 'The Person ID of the mother. Fill in both parents wherever you know them: the ' +
+    'page shows both, and descent follows whichever of the two carries a P number.',
+  'ParentID': 'The old name for FatherID. Family Tree ▸ Set up & repair ▸ Update the sheet to ' +
+    'the latest layout will rename it for you; nothing in it is lost.',
+  'Parent2ID': 'The old name for MotherID. Family Tree ▸ Set up & repair ▸ Update the sheet to ' +
+    'the latest layout will rename it for you; nothing in it is lost.',
   'SpouseID': 'The Person ID of the husband or wife. Recording the marriage on either row is ' +
-    'enough; the website reads it from both sides.',
-  'Bloodline': 'No = this person married into the family. They keep a page of their own but ' +
-    'hold no place in the line of descent. Leave blank for everyone born into the family.',
-  'Branch': 'No longer used. Which line someone belongs to is worked out from the tree. ' +
-    'Family Tree ▸ Name the family branches. The website groups and filters people by it. ' +
-    'Blank simply means that command has not been run yet.',
+    'enough; the website reads it from both sides. A marriage is shown on both their pages and ' +
+    'is never a link in the ancestry — no one descends from a marriage, only from a parent.',
+  'Bloodline': 'No longer used. The letter in the Person ID says it instead: P = born into the ' +
+    'family, S = married into it. Before emptying this column, check that everyone marked No ' +
+    'already has an S number — until they do, this column is the only record of who married in, ' +
+    'and clearing it would quietly make them blood relatives. Set up & repair ▸ Update the sheet ' +
+    'to the latest layout will tell you which way round you are.',
+  'Branch': 'No longer used, and safe to delete once it is empty. Which line somebody belongs ' +
+    'to is worked out from the tree itself, so it can never fall out of step with it.',
   'Generation': 'How many generations down from the earliest known ancestor, counting the ' +
     'ancestor as 1. Filled in by Family Tree ▸ Recalculate generations — do not type it by hand.',
   'BirthDate': 'Any form is understood: 1948, c.1950, March 1948. Only the year is used for ' +
@@ -849,8 +865,8 @@ const COLUMN_NOTES = {
     'where you know the birth order but not the dates.',
   'Notes': 'Anything for you, the keeper of the record. Never shown on the website.',
   'Spouse': 'No longer used. A husband or wife now has a record of their own with an S id. ' +
-    'Family Tree ▸ Turn spouse names into records converts anything still written here, and ' +
-    'the column can then be deleted.'
+    'Give each name still written here a record with Family Tree ▸ Add a husband or wife…, ' +
+    'then Set up & repair ▸ Update the sheet to the latest layout will delete the column.'
 };
 
 /** Menu ▸ Explain what each column is for. */
@@ -897,8 +913,9 @@ function removeSpouseNameColumn() {
         return '  ' + r.PersonID + ' ' + (r.DisplayName || '') + ' — ' + r.Spouse;
       }).join('\n') +
       (stillThere.length > 10 ? '\n  … and ' + (stillThere.length - 10) + ' more' : '') + '\n\n' +
-      'Run Family Tree ▸ Turn spouse names into records first. That gives each of them a page ' +
-      'of their own and empties the column, and then this will remove it.', ui.ButtonSet.OK);
+      'Give each of them a record with Family Tree ▸ Add a husband or wife… first. That gives ' +
+      'them a page of their own and empties the column, and then this will remove it.',
+      ui.ButtonSet.OK);
     return;
   }
   const go = ui.alert('Remove the Spouse column',
@@ -932,7 +949,6 @@ function makeSpouseRow_(nm, partner, gender, notes) {
     DisplayName: nm,
     Gender: gender || 'U',
     SpouseID: partner.PersonID,
-    Bloodline: 'No',
     Generation: '',
     Living: 'Unknown',
     Privacy: 'Public',
@@ -970,8 +986,8 @@ function oppositeGender_(g) {
  *
  * A name typed into the Spouse column is only a name: it has no page, no
  * photographs and no folder. This gives each one a record of their own — an S
- * id, Bloodline = No, and the marriage recorded on both rows — and, where the
- * husband or wife had only the one spouse, writes them in as the second parent
+ * id and the marriage recorded on both rows — and, where the husband or wife
+ * had only the one spouse, writes them in as the second parent
  * of that couple's children so the family is explicit in the sheet rather than
  * guessed at by the website.
  */
@@ -1001,7 +1017,7 @@ function spouseNamesToRecords() {
     ui.alert('Nothing to convert',
       'No names are waiting in the Spouse column.\n\n' +
       'Type a husband or wife\'s name into Spouse on their partner\'s row, then run this again — ' +
-      'or use Family Tree ▸ Add a spouse… to create one directly.', ui.ButtonSet.OK);
+      'or use Family Tree ▸ Add a husband or wife… to create one directly.', ui.ButtonSet.OK);
     return;
   }
 
@@ -1030,7 +1046,7 @@ function spouseNamesToRecords() {
   const go = ui.alert('Turn spouse names into records',
     jobs.length + ' name(s) will each become a person with a page of their own:\n\n' + preview +
     (jobs.length > 12 ? '\n  … and ' + (jobs.length - 12) + ' more' : '') + '\n\n' +
-    'Each gets an S id, Bloodline = No, and a link to the person they married. Where someone has\n' +
+    'Each gets an S id and a link to the person they married. Where someone has\n' +
     'only one husband or wife, that spouse is also written into ' + SECOND + ' on their children,\n' +
     'so the couple\'s children show on both their pages.\n\n' +
     'Nobody is added to the line of descent, no Person ID changes, and the tree is untouched.\n' +
@@ -1147,6 +1163,45 @@ function addSpousePrompt() {
     ui.ButtonSet.OK);
 }
 
+/**
+ * Retired commands.
+ *
+ * Both of these were on the menu once and are not any more, because the sheet
+ * no longer needs to be told either thing. They are kept as functions, and only
+ * as functions, for one reason: Google builds the menu once, when the
+ * spreadsheet is opened. Paste in a new script while the sheet is open and the
+ * old menu stays on screen until the page is reloaded — and a menu item whose
+ * function has been deleted throws a script error rather than saying anything
+ * useful. This way it says something useful.
+ */
+function assignBranches() {
+  ui_().alert('Branches name themselves now',
+    'This command used to write a branch name onto every row. It has been removed, and the ' +
+    'Branch column with it.\n\n' +
+    'The website works the branches out from the tree itself — it follows each person up to ' +
+    'the earliest ancestor above them and groups them there — so the branches are always right ' +
+    'and can never fall out of step with the family.\n\n' +
+    'You are seeing this command because the menu was built before the current script was ' +
+    'pasted in — Google builds it once, when the spreadsheet is opened. Reload this page and ' +
+    'it will be gone.\n\n' +
+    'Script version ' + SCRIPT_BUILD + '.', ui_().ButtonSet.OK);
+}
+
+function addMarriageColumns() {
+  const added = ensureMarriageColumns_();
+  ui_().alert(added.length ? 'SpouseID added' : 'Nothing was missing',
+    (added.length
+      ? 'The PEOPLE sheet now has a SpouseID column. Put a husband or wife\'s Person ID in it.'
+      : 'The PEOPLE sheet already has everything a marriage needs.') + '\n\n' +
+    'Bloodline is no longer one of them. The letter in the Person ID says it instead — P for ' +
+    'born into the family, S for married into it — and that letter is the only thing deciding ' +
+    'who appears in the tree.\n\n' +
+    'This command has been folded into Family Tree ▸ Set up & repair ▸ Update the sheet to the ' +
+    'latest layout. You are seeing it because the menu was built before the current script was ' +
+    'pasted in; reload this page and it will be gone.\n\n' +
+    'Script version ' + SCRIPT_BUILD + '.', ui_().ButtonSet.OK);
+}
+
 /** Menu ▸ Check the record for problems. */
 function validateRecord() {
   const peopleTable = table_('PEOPLE');
@@ -1154,20 +1209,17 @@ function validateRecord() {
   const byId = {};
   const problems = [], warnings = [];
 
-  // Without these three columns the site does not break — it quietly behaves as
-  // though nobody in the family ever married, and any spouse name approved from
-  // the inbox is dropped on the way in. Silence is the whole problem, so say so.
-  const absent = ['SpouseID', 'Bloodline'].filter(function (h) {
-    return peopleTable.header.indexOf(h) < 0;
-  });
-  const andOr = function (a) {
-    return a.length < 2 ? a.join('') : a.slice(0, -1).join(', ') + ' or ' + a[a.length - 1];
-  };
-  if (absent.length)
-    problems.push('The PEOPLE sheet has no ' + andOr(absent) + ' column' +
-      (absent.length > 1 ? 's' : '') + ', so marriages cannot be recorded. ' +
-      'Run Family Tree ▸ Add the marriage columns and ' +
-      (absent.length > 1 ? 'they' : 'it') + ' will be added for you.');
+  // Without SpouseID the site does not break — it quietly behaves as though
+  // nobody in the family ever married, and any spouse approved from the inbox
+  // is dropped on the way in. Silence is the whole problem, so say so.
+  //
+  // Bloodline is NOT checked for. It has been retired: the letter in the Person
+  // ID is what says whether somebody was born into the family (P) or married
+  // into it (S), and a column cannot contradict an ID.
+  if (peopleTable.header.indexOf('SpouseID') < 0)
+    problems.push('The PEOPLE sheet has no SpouseID column, so marriages cannot be recorded. ' +
+      'Run Family Tree ▸ Set up & repair ▸ Update the sheet to the latest layout and it will ' +
+      'be added for you.');
 
   people.forEach(function (r) {
     if (!r.PersonID) { problems.push('A row in PEOPLE has no Person ID (row ' + r._row + ').'); return; }
@@ -1199,8 +1251,9 @@ function validateRecord() {
     String(r.SpouseID || '').split(/[;,]/).forEach(function (x) {
       x = x.trim(); if (!x) return;
       if (x === r.PersonID) problems.push(r.PersonID + ' is recorded as their own spouse.');
-      else if (!byId[x]) problems.push(r.PersonID + ' has SpouseID = ' + x + ', but no such person exists. ' +
-        'Use the Spouse column for a wife or husband who has no record of their own.');
+      else if (!byId[x]) problems.push(r.PersonID + ' has SpouseID = ' + x + ', but no such person ' +
+        'exists. Either correct the ID, or give that husband or wife a row of their own with ' +
+        'Family Tree ▸ Add a husband or wife…');
     });
     parentsOfRow_(r, byId).forEach(function (pid) {
       const c = yr(r.BirthDate), pb = yr(byId[pid].BirthDate);
@@ -1219,8 +1272,10 @@ function validateRecord() {
     }
   });
 
-  // Sub-tables pointing at people who do not exist.
+  // Sub-tables pointing at people who do not exist. A tab that was never
+  // created is not a fault to report — there is simply nothing in it.
   ['RELATIONSHIPS','PLACES','OCCUPATIONS','EDUCATION','EVENTS','PHOTOS','STORIES'].forEach(function (tab) {
+    if (!book_().getSheetByName(tab)) { warnings.push('There is no ' + tab + ' tab.'); return; }
     table_(tab).rows.forEach(function (r) {
       ['PersonID','Person1ID','Person2ID'].forEach(function (k) {
         if (r[k] && !byId[r[k]]) problems.push(tab + ' row ' + r._row + ' refers to ' + r[k] + ', who does not exist.');
@@ -1235,9 +1290,10 @@ function validateRecord() {
     if (ps.length) linked[r.PersonID] = true;
     ps.forEach(function (p) { linked[p] = true; });
   });
-  table_('RELATIONSHIPS').rows.forEach(function (r) {
-    if (byId[r.Person1ID] && byId[r.Person2ID]) { linked[r.Person1ID] = true; linked[r.Person2ID] = true; }
-  });
+  if (book_().getSheetByName('RELATIONSHIPS'))
+    table_('RELATIONSHIPS').rows.forEach(function (r) {
+      if (byId[r.Person1ID] && byId[r.Person2ID]) { linked[r.Person1ID] = true; linked[r.Person2ID] = true; }
+    });
   // A marriage attaches a spouse to the family, because that is the only way
   // they are attached at all. It does NOT attach anyone in the line: being
   // married is exactly compatible with having been entered without a ParentID,
@@ -1260,7 +1316,8 @@ function validateRecord() {
     (problems.length ? 'MUST FIX\n' + problems.map(function (p) { return '• ' + p; }).join('\n') + '\n\n' : '') +
     (warnings.length ? 'WORTH CHECKING\n' + warnings.map(function (w) { return '• ' + w; }).join('\n') : '') ||
     'Every Person ID is unique, every parent link points at a real person, and nothing is orphaned.';
-  ui_().alert(head, body.slice(0, 8000), ui_().ButtonSet.OK);
+  ui_().alert(head, body.slice(0, 8000) + '\n\nChecked by script version ' + SCRIPT_BUILD + '.',
+    ui_().ButtonSet.OK);
 }
 
 /** Menu ▸ Family statistics. */
@@ -1312,7 +1369,8 @@ function reviewQueue() {
 
   const warn = legacy
     ? '\n\n⚠ ' + legacy + ' older pending row(s) are still sitting in PHOTOS/STORIES, where the\n' +
-      'website downloads them. Run Family Tree ▸ Move old pending rows into the inbox.'
+      'website downloads them. Run Family Tree ▸ Set up & repair ▸ Update the sheet to the\n' +
+      'latest layout, which moves them where visitors cannot reach them.'
     : '';
 
   if (!waiting.length) {
@@ -1392,7 +1450,6 @@ function publishPerson_(r) {
     // S id, no generation and no parent link; the marriage is the whole of
     // their attachment, and it is written onto both rows below.
     fields['SpouseID'] = related.PersonID;
-    fields['Bloodline'] = 'No';
     generation = '';
   }
 
@@ -1539,7 +1596,7 @@ function actOnSelection_(approve) {
         ? '\n\nAdded to PEOPLE:\n  ' + addedPeople.join('\n  ') +
           '\n\nEach new person is marked Living = Yes and Status = Reported by family, and anything\n' +
           'the contributor wrote is in their Notes. Read those notes — they may flag a conflict.\n' +
-          'Then run Family Tree ▸ Recalculate generations, and Name the family branches if you use them.'
+          'Then run Family Tree ▸ Recalculate generations.'
         : '') +
       (corrections
         ? '\n\n' + corrections + ' correction(s) filed. Corrections are never applied automatically —\n' +
@@ -1578,6 +1635,17 @@ function rejectSelection()  { actOnSelection_(false); }
  * in PHOTOS/STORIES are visible to every website visitor; this gets them out.
  */
 function migratePendingToInbox() {
+  const moved = migratePendingToInbox_();
+  ui_().alert(moved ? 'Moved to the inbox' : 'Nothing to move',
+    moved
+      ? moved + ' pending row(s) moved out of the public sheets and into INBOX.\n\n' +
+        'They are no longer downloaded by visitors. Review them there as usual.'
+      : 'No pending rows were left in PHOTOS or STORIES. Nothing needed moving.',
+    ui_().ButtonSet.OK);
+}
+
+/** The work of it, without a dialog, so the layout update can run it too. */
+function migratePendingToInbox_() {
   inbox_();
   var moved = 0;
 
@@ -1598,12 +1666,7 @@ function migratePendingToInbox() {
     });
   });
 
-  ui_().alert(moved ? 'Moved to the inbox' : 'Nothing to move',
-    moved
-      ? moved + ' pending row(s) moved out of the public sheets and into INBOX.\n\n' +
-        'They are no longer downloaded by visitors. Review them there as usual.'
-      : 'No pending rows were left in PHOTOS or STORIES. Nothing needed moving.',
-    ui_().ButtonSet.OK);
+  return moved;
 }
 
 /** Menu ▸ Make the selected photo the profile photo. */
@@ -1675,13 +1738,20 @@ function backupNow() {
 /**
  * Menu ▸ Update the sheet to the latest layout.
  *
- * Brings a live spreadsheet in step with what the website reads:
+ * The one repair command. Whatever state the sheet is in, this brings it in
+ * step with what the website reads:
+ *   • SpouseID is added if it was never there
  *   • the parent columns become FatherID and MotherID — everyone has both
  *   • Bloodline retires, because a P or S number already says it
  *   • Branch retires, because which line someone is on is worked out from the tree
+ *   • the old free-text Spouse column retires, because a husband or wife has a
+ *     record of their own now
+ *   • anything still waiting for approval is moved out of the sheets visitors
+ *     download and into INBOX
  *
- * A column is only ever removed when it is empty. Nothing that holds data is
- * deleted, no value moves cell, and no ID changes. Safe to run twice.
+ * A column is only ever removed when it is empty — a name still typed in one is
+ * somebody's name, and is reported rather than deleted. Nothing that holds data
+ * is deleted, no value moves cell, and no ID changes. Safe to run twice.
  */
 function updateSheetLayout() {
   const ui = ui_();
@@ -1690,7 +1760,14 @@ function updateSheetLayout() {
                  .map(function (h) { return String(h).trim(); });
   const done = [], warn = [];
 
-  // 1. gendered parent columns: everyone has a father and a mother
+  // 1. the columns the website needs, added if they were never there
+  ensureMarriageColumns_().forEach(function (name) {
+    done.push(name + ' added — the website reads marriages from it');
+  });
+  header = sh.getRange(1, 1, 1, Math.max(sh.getLastColumn(), 1)).getValues()[0]
+             .map(function (h) { return String(h).trim(); });
+
+  // 2. gendered parent columns: everyone has a father and a mother
   [['ParentID', 'FatherID'], ['Parent2ID', 'MotherID']].forEach(function (pair) {
     const i = header.indexOf(pair[0]);
     if (i >= 0 && header.indexOf(pair[1]) < 0) {
@@ -1700,8 +1777,15 @@ function updateSheetLayout() {
     }
   });
 
-  // 2. columns the website no longer reads, removed only when empty
-  ['Bloodline', 'Branch'].forEach(function (name) {
+  // 3. columns the website no longer reads, removed only when empty. Each is
+  //    something the sheet used to be asked to remember and now works out for
+  //    itself, so a value left in one can only ever contradict the truth.
+  const RETIRED = {
+    'Bloodline': 'The P or S in the Person ID says it now, so those values are ignored.',
+    'Branch': 'Which line somebody is on is worked out from the tree now, so it is ignored.',
+    'Spouse': 'Husbands and wives have records of their own now, linked by SpouseID.'
+  };
+  ['Bloodline', 'Branch', 'Spouse'].forEach(function (name) {
     const i = header.indexOf(name);
     if (i < 0) return;
     const last = Math.max(sh.getLastRow() - 1, 0);
@@ -1712,32 +1796,70 @@ function updateSheetLayout() {
     if (!used) {
       sh.deleteColumn(i + 1); header.splice(i, 1);
       done.push(name + ' removed — it was empty and is no longer read');
-    } else if (name === 'Bloodline') {
-      warn.push(used + ' row(s) still carry a Bloodline value. It is now the P or S in the ' +
-                'ID that decides, so those values are ignored. Clear the column and run this ' +
-                'again to remove it.');
-    } else {
-      warn.push(used + ' row(s) still carry a Branch value. Which line someone is on is worked ' +
-                'out from the tree now, so it is ignored. Clear the column and run this again.');
+    } else if (name === 'Spouse') {
+      // Never deleted while it holds text: that text is somebody's name. The
+      // only thing that can empty it is the conversion, which asks for itself.
+      spouseNamesToRecords();
+      const still = sh.getRange(2, i + 1, last, 1).getValues()
+        .filter(function (v) { return String(v[0]).trim() !== ''; }).length;
+      if (!still) {
+        sh.deleteColumn(i + 1); header.splice(i, 1);
+        done.push(used + ' name(s) in the Spouse column became records of their own, and the ' +
+                  'column was removed');
+      } else {
+        warn.push(still + ' row(s) still have a name typed in the Spouse column. ' + RETIRED[name] +
+                  ' Give each of them a record with Family Tree ▸ Add a husband or wife…, then ' +
+                  'clear the cell. The column goes when it is empty.');
+      }
+    } else if (name === 'Branch') {
+      warn.push(used + ' row(s) still carry a Branch value. ' + RETIRED[name] +
+                ' Clear the column and run this again to remove it.');
     }
+    // Bloodline is deliberately not offered for clearing here. Whether it is
+    // safe to clear depends on something checked in step 4 below.
   });
 
-  // 3. anyone married in should carry an S number, or they will show in the tree
+  // 4. Anyone married in must carry an S number, because that letter is now the
+  //    only thing keeping them out of the line of descent. Until it does, the
+  //    old Bloodline = No is the sole surviving record of who married in — so
+  //    while a single one of those rows exists, clearing that column is the one
+  //    thing this command must not encourage.
   const strays = table_('PEOPLE').rows.filter(function (r) {
-    return String(r.SpouseID || '').trim() && !inLine_(r.PersonID) === false &&
-           /^no$/i.test(String(r.Bloodline || '').trim());
+    return inLine_(r.PersonID) && /^no$/i.test(String(r.Bloodline || '').trim());
   });
-  if (strays.length)
-    warn.push(strays.length + ' person(s) are marked Bloodline = No but still have a P number, ' +
-              'so they would appear in the tree: ' +
-              strays.slice(0, 8).map(function (r) { return r.PersonID; }).join(', ') +
-              '. Give them S numbers.');
+  const iBlood = header.indexOf('Bloodline');
+  if (strays.length) {
+    warn.push(strays.length + ' person(s) are marked Bloodline = No but still carry a P number, ' +
+              'so the tree would count them as blood: ' +
+              strays.slice(0, 8).map(function (r) {
+                return r.PersonID + ' (' + (r.DisplayName || '?') + ')';
+              }).join(', ') +
+              (strays.length > 8 ? ' and ' + (strays.length - 8) + ' more' : '') + '.\n' +
+              '    Give each of them an S number — and do NOT clear the Bloodline column until ' +
+              'you have. Right now that column is the only record of who married in; empty it ' +
+              'first and they silently become blood relatives.');
+  } else if (iBlood >= 0) {
+    warn.push('The Bloodline column still has values in it, but every person marked No already ' +
+              'carries an S number, so nothing depends on it any more. Clear the column and run ' +
+              'this again to remove it.');
+  }
+
+  // 5. Nothing awaiting approval may sit in a sheet the website downloads. A
+  //    spreadsheet without those tabs simply has nothing to move — it is not a
+  //    reason to abandon the repairs already made above.
+  var moved = 0;
+  try { moved = migratePendingToInbox_(); }
+  catch (err) { warn.push('Could not check for rows waiting to be approved: ' + err.message); }
+  if (moved)
+    done.push(moved + ' row(s) still waiting for approval moved out of the public sheets ' +
+              'into INBOX, where visitors cannot reach them');
 
   if (!done.length && !warn.length) {
     ui.alert('Already up to date',
       'The sheet already matches what the website reads. Nothing needed changing.\n\n' +
       'If the site still looks unchanged, it is a cached page, not the sheet — open ' +
-      'your site at /#/admin and check the build number shown there.', ui.ButtonSet.OK);
+      'your site at /#/admin and check the build number shown there.\n\n' +
+      'Script version ' + SCRIPT_BUILD + '.', ui.ButtonSet.OK);
     return;
   }
 
@@ -1747,7 +1869,8 @@ function updateSheetLayout() {
     'No value moved and no ID changed.\n\n' +
     'A P number means descended from the family; an S number means married into it. ' +
     'That letter is the only thing deciding who appears in the tree.\n\n' +
-    'Reload the website to see the change.', ui.ButtonSet.OK);
+    'Reload the website to see the change.\n\nScript version ' + SCRIPT_BUILD + '.',
+    ui.ButtonSet.OK);
 }
 
 function toggleNightlyBackup() {
@@ -1801,6 +1924,10 @@ function showSetupDetails() {
     'Paste these into the CONFIG block at the top of index.html, commit, and the\n' +
     'website will start reading live family data.\n\n' +
     'Remember: this spreadsheet must be shared as "Anyone with the link ▸ Viewer"\n' +
-    'for the website to read it.',
+    'for the website to read it.\n\n' +
+    'Script version: ' + SCRIPT_BUILD + '\n' +
+    'The menu is built when the spreadsheet is opened. If it still shows a command you\n' +
+    'no longer expect, this tab has been open since before the script was pasted in —\n' +
+    'reload the page and the menu is rebuilt from the current script.',
     ui_().ButtonSet.OK);
 }
