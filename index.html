@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="build" content="2026-08-21-2041">
+<meta name="build" content="2026-08-22-1258">
 <title>Odikom Family Tree</title>
 <meta name="description" content="A living record of the Odikom family — ancestry, relationships, places, professions and stories, preserved for the generations still to come.">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' fill='%233E5C4B'/%3E%3Cg fill='none' stroke='%23FBF8F3' stroke-width='1.9' stroke-linecap='round'%3E%3Cpath d='M12 21v-6'/%3E%3Cpath d='M12 15 7 11'/%3E%3Cpath d='m12 15 5-4'/%3E%3Cpath d='M12 7.2v3.3'/%3E%3C/g%3E%3Cg fill='%23FBF8F3'%3E%3Ccircle cx='12' cy='4.6' r='2.6'/%3E%3Ccircle cx='5.4' cy='10.4' r='2.4'/%3E%3Ccircle cx='18.6' cy='10.4' r='2.4'/%3E%3C/g%3E%3C/svg%3E">
@@ -66,7 +66,7 @@ const CONFIG = {
   APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbyH6fJ9SDK69ZL8461S4sqagVTApMuLaukl1mIHMRuA673LKznrYKL7GVP9E9nk-0Ly/exec",
 
   // 3. Optional. Only change if you renamed tabs in the spreadsheet.
-  TABS: ["PEOPLE","RELATIONSHIPS","PLACES","OCCUPATIONS","EDUCATION","EVENTS","PHOTOS","STORIES","SETTINGS"]
+  TABS: ["PEOPLE","RELATIONSHIPS","PLACES","OCCUPATIONS","EDUCATION","EVENTS","PHOTOS","STORIES","SETTINGS","FAMILIES","LINES"]
 };
 </script>
 <!-- ═══════════════════════════════════════════════════════════════════ -->
@@ -413,7 +413,7 @@ footer.site{border-top:1px solid var(--rule); padding:24px 0 40px; color:var(--i
    built-in sample data below keeps the site working.
    ═════════════════════════════════════════════════════════════════════ */
 
-const SEED = {"PEOPLE":[{"PersonID":"P001","DisplayName":"Unknown Ancestor","FullName":"","OtherNames":"","Nickname":"","Gender":"M","FatherID":"","MotherID":"","SpouseID":"P002","Generation":"1","BirthDate":"","BirthPlace":"Obutom","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"No","Privacy":"Public","ProfilePhoto":"","ShortBio":"Earliest ancestor currently known through family oral history. Reported to have been a clan head of Obutom. His name has not yet been recovered.","Status":"Name unknown","SortOrder":"","Notes":"Ask the elders for his name. Everything below descends from him."},{"PersonID":"P002","DisplayName":"Unknown Wife","FullName":"","OtherNames":"","Nickname":"","Gender":"F","FatherID":"","MotherID":"","SpouseID":"P001","Generation":"1","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"No","Privacy":"Public","ProfilePhoto":"","ShortBio":"Wife of the earliest known ancestor. Her name has not yet been recovered.","Status":"Name unknown","SortOrder":"","Notes":""},{"PersonID":"P003","DisplayName":"Unknown Daughter","FullName":"","OtherNames":"","Nickname":"","Gender":"F","FatherID":"P001","MotherID":"P002","SpouseID":"","Generation":"","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"No","Privacy":"Public","ProfilePhoto":"","ShortBio":"Daughter of the original ancestors. Her descendants form the Daughter Branch.","Status":"Name unknown","SortOrder":"1","Notes":""},{"PersonID":"P004","DisplayName":"Unknown Son","FullName":"","OtherNames":"","Nickname":"","Gender":"M","FatherID":"P001","MotherID":"P002","SpouseID":"","Generation":"","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"No","Privacy":"Public","ProfilePhoto":"","ShortBio":"Son of the original ancestors. His descendants form the Son Branch.","Status":"Name unknown","SortOrder":"2","Notes":""},{"PersonID":"P005","DisplayName":"King of Boys","FullName":"","OtherNames":"","Nickname":"King of Boys","Gender":"M","FatherID":"","MotherID":"P003","SpouseID":"","Generation":"","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Unknown","Privacy":"Public","ProfilePhoto":"","ShortBio":"","Status":"Reported by family","SortOrder":"1","Notes":"Known to the family by this name. Given name not yet recorded."},{"PersonID":"P006","DisplayName":"Uncle Richard","FullName":"","OtherNames":"","Nickname":"Richard","Gender":"M","FatherID":"","MotherID":"P003","SpouseID":"","Generation":"","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Unknown","Privacy":"Public","ProfilePhoto":"","ShortBio":"","Status":"Reported by family","SortOrder":"2","Notes":""},{"PersonID":"P007","DisplayName":"Margres","FullName":"","OtherNames":"","Nickname":"","Gender":"U","FatherID":"","MotherID":"P003","SpouseID":"","Generation":"","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Unknown","Privacy":"Public","ProfilePhoto":"","ShortBio":"","Status":"Reported by family","SortOrder":"3","Notes":"Gender not yet confirmed - please check with the family."},{"PersonID":"P008","DisplayName":"Tennyson","FullName":"","OtherNames":"","Nickname":"","Gender":"M","FatherID":"P004","MotherID":"","SpouseID":"","Generation":"","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Unknown","Privacy":"Public","ProfilePhoto":"","ShortBio":"","Status":"Reported by family","SortOrder":"1","Notes":""},{"PersonID":"P009","DisplayName":"Jimmies","FullName":"","OtherNames":"","Nickname":"","Gender":"M","FatherID":"P004","MotherID":"","SpouseID":"","Generation":"","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Unknown","Privacy":"Public","ProfilePhoto":"","ShortBio":"","Status":"Reported by family","SortOrder":"2","Notes":""},{"PersonID":"P010","DisplayName":"Tommy","FullName":"","OtherNames":"","Nickname":"","Gender":"M","FatherID":"P004","MotherID":"","SpouseID":"","Generation":"","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Unknown","Privacy":"Public","ProfilePhoto":"","ShortBio":"","Status":"Reported by family","SortOrder":"3","Notes":""},{"PersonID":"P011","DisplayName":"Benjamin","FullName":"","OtherNames":"","Nickname":"","Gender":"M","FatherID":"P004","MotherID":"","SpouseID":"","Generation":"","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Unknown","Privacy":"Public","ProfilePhoto":"","ShortBio":"","Status":"Reported by family","SortOrder":"4","Notes":""},{"PersonID":"P012","DisplayName":"Adam","FullName":"","OtherNames":"","Nickname":"","Gender":"M","FatherID":"P010","MotherID":"","SpouseID":"","Generation":"","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Unknown","Privacy":"Public","ProfilePhoto":"","ShortBio":"","Status":"Reported by family","SortOrder":"1","Notes":""},{"PersonID":"P013","DisplayName":"Ediboy","FullName":"","OtherNames":"","Nickname":"","Gender":"M","FatherID":"P010","MotherID":"","SpouseID":"","Generation":"","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Unknown","Privacy":"Public","ProfilePhoto":"","ShortBio":"","Status":"Reported by family","SortOrder":"2","Notes":""},{"PersonID":"P014","DisplayName":"You (Administrator)","FullName":"","OtherNames":"","Nickname":"","Gender":"U","FatherID":"P013","MotherID":"","SpouseID":"","Generation":"","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Yes","Privacy":"Public","ProfilePhoto":"","ShortBio":"Keeper of this family archive.","Status":"Confirmed by family","SortOrder":"1","Notes":"Replace this row with your own name and details."},{"PersonID":"P015","DisplayName":"Sibling 1","FullName":"","OtherNames":"","Nickname":"","Gender":"U","FatherID":"P013","MotherID":"","SpouseID":"","Generation":"","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Yes","Privacy":"Public","ProfilePhoto":"","ShortBio":"","Status":"Confirmed by family","SortOrder":"2","Notes":"Replace with the real name."},{"PersonID":"P016","DisplayName":"Sibling 2","FullName":"","OtherNames":"","Nickname":"","Gender":"U","FatherID":"P013","MotherID":"","SpouseID":"","Generation":"","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Yes","Privacy":"Public","ProfilePhoto":"","ShortBio":"","Status":"Confirmed by family","SortOrder":"3","Notes":"Replace with the real name."},{"PersonID":"P017","DisplayName":"Sibling 3","FullName":"","OtherNames":"","Nickname":"","Gender":"U","FatherID":"P013","MotherID":"","SpouseID":"","Generation":"","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Yes","Privacy":"Public","ProfilePhoto":"","ShortBio":"","Status":"Confirmed by family","SortOrder":"4","Notes":"Replace with the real name."},{"PersonID":"P018","DisplayName":"Sibling 4","FullName":"","OtherNames":"","Nickname":"","Gender":"U","FatherID":"P013","MotherID":"","SpouseID":"","Generation":"","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Yes","Privacy":"Public","ProfilePhoto":"","ShortBio":"","Status":"Confirmed by family","SortOrder":"5","Notes":"Replace with the real name."},{"PersonID":"P019","DisplayName":"Your Child","FullName":"","OtherNames":"","Nickname":"","Gender":"U","FatherID":"P014","MotherID":"","SpouseID":"","Generation":"","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Yes","Privacy":"Limited","ProfilePhoto":"","ShortBio":"","Status":"Confirmed by family","SortOrder":"1","Notes":"Replace with a real name, or delete the row until there is someone to add."}],"RELATIONSHIPS":[],"PLACES":[{"PlaceRecID":"L001","PersonID":"P001","Place":"Obutom","Country":"Nigeria","PlaceType":"Lived in","FromYear":"","ToYear":"","Notes":"Reported to have been a clan head here. Obutom is the ancestral home of this line.","Status":"Reported by family"}],"OCCUPATIONS":[{"OccRecID":"O001","PersonID":"P001","Occupation":"Clan Head","Specialisation":"","Employer":"","FromYear":"","ToYear":"","Place":"Obutom","Achievements":"Held clan leadership at Obutom.","Notes":"The earliest role recorded in family oral history.","Status":"Reported by family"}],"EDUCATION":[],"EVENTS":[],"PHOTOS":[],"STORIES":[{"StoryID":"S001","PersonID":"P001","Title":"The clan head of Obutom","Story":"Family oral history reports that the earliest ancestor known to this line was a clan head of Obutom. His name has not yet been recovered, and neither has his wife's. Every branch recorded in this archive descends from the two of them.\n\nThis entry is a placeholder for the fuller account. When an elder is able to tell the story properly - his name, the years he lived, how the clan leadership passed on - replace this text with what they say, and record who told it in the ToldBy column.","ToldBy":"","RecordedDate":"","Category":"Oral history","ApprovalStatus":"Approved","Notes":"Placeholder. Replace with a recorded account from an elder."}],"SETTINGS":[{"Key":"site_title","Value":"Odikom Family Tree","Description":"Name shown in the site header and browser tab."},{"Key":"tagline","Value":"Build Once. Grow Forever.","Description":"Line shown under the title on the home page."},{"Key":"root_person_id","Value":"P001","Description":"The person the main tree starts from."},{"Key":"hide_living_details","Value":"Yes","Description":"Yes = show only names and relationships for living people. Strongly recommended while the site is public."},{"Key":"sheet_id","Value":"","Description":"Filled in during setup. The ID of this spreadsheet, taken from its URL."},{"Key":"apps_script_url","Value":"","Description":"Filled in during setup. The /exec URL of the deployed Apps Script web app. Leave blank to hide the upload form."},{"Key":"drive_folder_id","Value":"","Description":"Filled in during setup. The Google Drive folder ID of FAMILY TREE/PEOPLE."},{"Key":"contact_email","Value":"","Description":"Optional. Shown to family members who want to send corrections."},{"Key":"allow_uploads","Value":"Yes","Description":"Yes = family members can submit photographs and stories for approval."},{"Key":"home_intro","Value":"This is a living record of our family. It begins with the ancestors whose names we still hope to recover, and continues through today's generation and the generations still to come. Every branch matters. Every person has a place.","Description":"Paragraph shown on the home page."}]};
+const SEED = {"PEOPLE":[{"PersonID":"P001","DisplayName":"Unknown Ancestor","FullName":"","OtherNames":"","Nickname":"","Gender":"M","FatherID":"","MotherID":"","SpouseID":"P002","Generation":"1","BirthDate":"","BirthPlace":"Obutong","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"No","Privacy":"Public","ProfilePhoto":"","ShortBio":"Earliest ancestor currently known through family oral history. Reported to have been a clan head of Obutong, one of the Efik settlements of Old Calabar. His name has not yet been recovered.","Status":"Name unknown","SortOrder":"","Notes":"Ask the elders for his name. Everything below descends from him."},{"PersonID":"P002","DisplayName":"Unknown Wife","FullName":"","OtherNames":"","Nickname":"","Gender":"F","FatherID":"","MotherID":"","SpouseID":"P001","Generation":"1","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"No","Privacy":"Public","ProfilePhoto":"","ShortBio":"Wife of the earliest known ancestor. Her name has not yet been recovered.","Status":"Name unknown","SortOrder":"","Notes":""},{"PersonID":"P003","DisplayName":"Unknown Daughter","FullName":"","OtherNames":"","Nickname":"","Gender":"F","FatherID":"P001","MotherID":"P002","SpouseID":"","Generation":"","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"No","Privacy":"Public","ProfilePhoto":"","ShortBio":"Daughter of the original ancestors. Her descendants form the Daughter Branch.","Status":"Name unknown","SortOrder":"1","Notes":""},{"PersonID":"P004","DisplayName":"Unknown Son","FullName":"","OtherNames":"","Nickname":"","Gender":"M","FatherID":"P001","MotherID":"P002","SpouseID":"","Generation":"","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"No","Privacy":"Public","ProfilePhoto":"","ShortBio":"Son of the original ancestors. His descendants form the Son Branch.","Status":"Name unknown","SortOrder":"2","Notes":""},{"PersonID":"P005","DisplayName":"King of Boys","FullName":"","OtherNames":"","Nickname":"King of Boys","Gender":"M","FatherID":"","MotherID":"P003","SpouseID":"","Generation":"","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Unknown","Privacy":"Public","ProfilePhoto":"","ShortBio":"","Status":"Reported by family","SortOrder":"1","Notes":"Known to the family by this name. Given name not yet recorded."},{"PersonID":"P006","DisplayName":"Uncle Richard","FullName":"","OtherNames":"","Nickname":"Richard","Gender":"M","FatherID":"","MotherID":"P003","SpouseID":"","Generation":"","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Unknown","Privacy":"Public","ProfilePhoto":"","ShortBio":"","Status":"Reported by family","SortOrder":"2","Notes":""},{"PersonID":"P007","DisplayName":"Margres","FullName":"","OtherNames":"","Nickname":"","Gender":"U","FatherID":"","MotherID":"P003","SpouseID":"","Generation":"","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Unknown","Privacy":"Public","ProfilePhoto":"","ShortBio":"","Status":"Reported by family","SortOrder":"3","Notes":"Gender not yet confirmed - please check with the family."},{"PersonID":"P008","DisplayName":"Tennyson","FullName":"","OtherNames":"","Nickname":"","Gender":"M","FatherID":"P004","MotherID":"","SpouseID":"","Generation":"","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Unknown","Privacy":"Public","ProfilePhoto":"","ShortBio":"","Status":"Reported by family","SortOrder":"1","Notes":""},{"PersonID":"P009","DisplayName":"Jimmies","FullName":"","OtherNames":"","Nickname":"","Gender":"M","FatherID":"P004","MotherID":"","SpouseID":"","Generation":"","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Unknown","Privacy":"Public","ProfilePhoto":"","ShortBio":"","Status":"Reported by family","SortOrder":"2","Notes":""},{"PersonID":"P010","DisplayName":"Tommy","FullName":"","OtherNames":"","Nickname":"","Gender":"M","FatherID":"P004","MotherID":"","SpouseID":"","Generation":"","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Unknown","Privacy":"Public","ProfilePhoto":"","ShortBio":"","Status":"Reported by family","SortOrder":"3","Notes":""},{"PersonID":"P011","DisplayName":"Benjamin","FullName":"","OtherNames":"","Nickname":"","Gender":"M","FatherID":"P004","MotherID":"","SpouseID":"","Generation":"","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Unknown","Privacy":"Public","ProfilePhoto":"","ShortBio":"","Status":"Reported by family","SortOrder":"4","Notes":""},{"PersonID":"P012","DisplayName":"Adam","FullName":"","OtherNames":"","Nickname":"","Gender":"M","FatherID":"P010","MotherID":"","SpouseID":"","Generation":"","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Unknown","Privacy":"Public","ProfilePhoto":"","ShortBio":"","Status":"Reported by family","SortOrder":"1","Notes":""},{"PersonID":"P013","DisplayName":"Ediboy","FullName":"","OtherNames":"","Nickname":"","Gender":"M","FatherID":"P010","MotherID":"","SpouseID":"","Generation":"","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Unknown","Privacy":"Public","ProfilePhoto":"","ShortBio":"","Status":"Reported by family","SortOrder":"2","Notes":""},{"PersonID":"P014","DisplayName":"You (Administrator)","FullName":"","OtherNames":"","Nickname":"","Gender":"U","FatherID":"P013","MotherID":"","SpouseID":"","Generation":"","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Yes","Privacy":"Public","ProfilePhoto":"","ShortBio":"Keeper of this family archive.","Status":"Confirmed by family","SortOrder":"1","Notes":"Replace this row with your own name and details."},{"PersonID":"P015","DisplayName":"Sibling 1","FullName":"","OtherNames":"","Nickname":"","Gender":"U","FatherID":"P013","MotherID":"","SpouseID":"","Generation":"","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Yes","Privacy":"Public","ProfilePhoto":"","ShortBio":"","Status":"Confirmed by family","SortOrder":"2","Notes":"Replace with the real name."},{"PersonID":"P016","DisplayName":"Sibling 2","FullName":"","OtherNames":"","Nickname":"","Gender":"U","FatherID":"P013","MotherID":"","SpouseID":"","Generation":"","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Yes","Privacy":"Public","ProfilePhoto":"","ShortBio":"","Status":"Confirmed by family","SortOrder":"3","Notes":"Replace with the real name."},{"PersonID":"P017","DisplayName":"Sibling 3","FullName":"","OtherNames":"","Nickname":"","Gender":"U","FatherID":"P013","MotherID":"","SpouseID":"","Generation":"","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Yes","Privacy":"Public","ProfilePhoto":"","ShortBio":"","Status":"Confirmed by family","SortOrder":"4","Notes":"Replace with the real name."},{"PersonID":"P018","DisplayName":"Sibling 4","FullName":"","OtherNames":"","Nickname":"","Gender":"U","FatherID":"P013","MotherID":"","SpouseID":"","Generation":"","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Yes","Privacy":"Public","ProfilePhoto":"","ShortBio":"","Status":"Confirmed by family","SortOrder":"5","Notes":"Replace with the real name."},{"PersonID":"P019","DisplayName":"Your Child","FullName":"","OtherNames":"","Nickname":"","Gender":"U","FatherID":"P014","MotherID":"","SpouseID":"","Generation":"","BirthDate":"","BirthPlace":"","DeathDate":"","DeathPlace":"","BurialPlace":"","Living":"Yes","Privacy":"Limited","ProfilePhoto":"","ShortBio":"","Status":"Confirmed by family","SortOrder":"1","Notes":"Replace with a real name, or delete the row until there is someone to add."}],"RELATIONSHIPS":[],"PLACES":[{"PlaceRecID":"L001","PersonID":"P001","Place":"Obutong","Country":"Nigeria","PlaceType":"Lived in","FromYear":"","ToYear":"","Notes":"Reported to have been a clan head here. Obutong is the ancestral home of this line.","Status":"Reported by family"}],"OCCUPATIONS":[{"OccRecID":"O001","PersonID":"P001","Occupation":"Clan Head","Specialisation":"","Employer":"","FromYear":"","ToYear":"","Place":"Obutong","Achievements":"Held clan leadership at Obutong.","Notes":"The earliest role recorded in family oral history.","Status":"Reported by family"}],"EDUCATION":[],"EVENTS":[],"PHOTOS":[],"STORIES":[{"StoryID":"S001","PersonID":"P001","Title":"The clan head of Obutong","Story":"Family oral history reports that the earliest ancestor known to this line was a clan head of Obutong. His name has not yet been recovered, and neither has his wife's. Every branch recorded in this archive descends from the two of them.\n\nThis entry is a placeholder for the fuller account. When an elder is able to tell the story properly - his name, the years he lived, how the clan leadership passed on - replace this text with what they say, and record who told it in the ToldBy column.","ToldBy":"","RecordedDate":"","Category":"Oral history","ApprovalStatus":"Approved","Notes":"Placeholder. Replace with a recorded account from an elder."}],"SETTINGS":[{"Key":"site_title","Value":"Odikom Family Tree","Description":"Name shown in the site header and browser tab."},{"Key":"tagline","Value":"Build Once. Grow Forever.","Description":"Line shown under the title on the home page."},{"Key":"root_person_id","Value":"P001","Description":"The person the main tree starts from."},{"Key":"hide_living_details","Value":"Yes","Description":"Yes = show only names and relationships for living people. Strongly recommended while the site is public."},{"Key":"sheet_id","Value":"","Description":"Filled in during setup. The ID of this spreadsheet, taken from its URL."},{"Key":"apps_script_url","Value":"","Description":"Filled in during setup. The /exec URL of the deployed Apps Script web app. Leave blank to hide the upload form."},{"Key":"drive_folder_id","Value":"","Description":"Filled in during setup. The Google Drive folder ID of FAMILY TREE/PEOPLE."},{"Key":"contact_email","Value":"","Description":"Optional. Shown to family members who want to send corrections."},{"Key":"allow_uploads","Value":"Yes","Description":"Yes = family members can submit photographs and stories for approval."},{"Key":"home_intro","Value":"This is a living record of our family. It begins with the ancestors whose names we still hope to recover, and continues through today's generation and the generations still to come. Every branch matters. Every person has a place.","Description":"Paragraph shown on the home page."}]};
 const DB = {};
 const IX = {byId:{}, kids:{}, allKids:{}, sub:{}, marriedTo:{}};
 let SOURCE = "sample";
@@ -451,21 +451,30 @@ function toObjects(rows){
 /* ── loading ────────────────────────────────────────────────────────── */
 // The stamp defeats any cache sitting between the browser and Google, on top of
 // the no-store below. Family data changes daily; it must never come from a cache.
-const gvizURL = tab =>
-  `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=out:csv&headers=1` +
+const gvizURL = (tab, sheetId) =>
+  `https://docs.google.com/spreadsheets/d/${sheetId || CONFIG.SHEET_ID}/gviz/tq?tqx=out:csv&headers=1` +
   `&sheet=${encodeURIComponent(tab)}&_=${Date.now()}`;
 
-async function loadFromSheet(){
-  const results = await Promise.all(CONFIG.TABS.map(async tab => {
+/**
+ * Read a set of tabs from any spreadsheet. A tab that is missing, private or
+ * renamed comes back null rather than throwing, because one absent tab must
+ * never cost you the other eight.
+ */
+async function fetchTabs(sheetId, tabs){
+  const results = await Promise.all(tabs.map(async tab => {
     try{
-      const r = await fetch(gvizURL(tab), {cache:"no-store"});
+      const r = await fetch(gvizURL(tab, sheetId), {cache:"no-store"});
       if(!r.ok) throw new Error(r.status);
       const t = await r.text();
       if(/^\s*</.test(t)) throw new Error("not csv");   // sign-in page or error HTML
       return [tab, toObjects(parseCSV(t))];
     }catch(e){ return [tab, null]; }
   }));
-  const map = Object.fromEntries(results);
+  return Object.fromEntries(results);
+}
+
+async function loadFromSheet(){
+  const map = await fetchTabs(CONFIG.SHEET_ID, CONFIG.TABS);
   if(!map.PEOPLE || !map.PEOPLE.length) throw new Error("PEOPLE tab unreadable");
   CONFIG.TABS.forEach(t => DB[t] = map[t] || []);
   SOURCE = "sheet";
@@ -514,6 +523,141 @@ async function loadAll(){
   loadSeed();
 }
 
+/* ── the lines that married in ──────────────────────────────────────── */
+/*
+ * One row of the FAMILIES tab is one family attached to one person here:
+ *
+ *   FamilyID | Title | Kind | PersonID | SheetID | TheirID | Show | Note
+ *
+ * Kind is what that family IS, in their own place's terms — a Royal Family and
+ * ruling house, or simply a family. This archive does not decide it and does
+ * not infer it: it prints what the keeper wrote, because whether a house rules
+ * is a matter for the clan and not for a spreadsheet.
+ *
+ * PersonID is who in THIS sheet the line belongs to. SheetID is their family's
+ * own spreadsheet, built from the same workbook and kept the same way. TheirID
+ * is that same person's row over there — the two records are held together by
+ * it, and each page links to the other. Nothing is merged into one row: two
+ * sheets, two records, one marriage between them, which is exactly how a
+ * marriage is recorded here already.
+ */
+const FAMILIES = {};
+const FAM_TABS = ["PEOPLE","RELATIONSHIPS","PLACES","OCCUPATIONS","EDUCATION","EVENTS","PHOTOS","STORIES"];
+
+/** A sheet ID, whether what was pasted was the ID or the whole address. */
+const sheetIdOf = v => { const m = String(v||"").match(/\/d\/([A-Za-z0-9_-]{20,})/); return m ? m[1] : String(v||"").trim(); };
+
+function readFamilies(){
+  Object.keys(FAMILIES).forEach(k => delete FAMILIES[k]);
+  [...(DB.FAMILIES||[]), ...(DB.LINES||[])].forEach(r => {
+    const id = (r.FamilyID||r.LineID||"").trim().toUpperCase();
+    const who = (r.PersonID||"").trim();
+    const sheet = sheetIdOf(r.SheetID);
+    // Silently skipped rather than shown broken: a half-filled row is someone
+    // part-way through setting a line up, not something a visitor should meet.
+    // A family may be recorded with no spreadsheet at all: the house, and who
+    // it comes through. That is often all anyone knows, and it is worth
+    // keeping. If someone in that family later starts a record of their own,
+    // the SheetID goes in this same row and the page comes alive.
+    if(!id || id.includes(":") || !who) return;
+    if((r.Show||"Yes").trim() && !isYes(r.Show||"Yes")) return;
+    if(FAMILIES[id]) return;                       // the newer tab wins
+    FAMILIES[id] = { id, personId: who, sheetId: sheet, kept: !!sheet,
+                  title: (r.Title||"").trim() || `${name(P(who)) || who}’s people`,
+                  kind: (r.Kind||"").trim(),
+                  theirId: (r.TheirID||"").trim(),
+                  note: (r.Note||"").trim(), state: "idle" };
+  });
+}
+/**
+ * How a family's kind reads at the end of a sentence.
+ *
+ * "…descends from Ekong Ambang Royal Family of Big Qua, a royal family" says
+ * the same thing twice. In Big Qua a Royal Family IS a ruling house, so the
+ * clause says the second thing instead of repeating the first — and where
+ * there is no such phrase to fall back on, it simply says nothing rather than
+ * stuttering. Whatever is written in Kind is otherwise printed as it stands.
+ */
+const KIND_CLAUSE = { "royal family": "a ruling house", "ruling house": "a ruling house" };
+function kindClause(L){
+  const k = (L.kind||"").trim().toLowerCase();
+  if(!k) return "";
+  if(KIND_CLAUSE[k]) return `, ${KIND_CLAUSE[k]}`;
+  return (L.title||"").toLowerCase().includes(k) ? "" : `, ${k}`;
+}
+
+/** The line belonging to this person, if they have one. */
+const familyFor = id => Object.values(FAMILIES).find(l => l.personId === (id||"").trim()) || null;
+const familyReady = l => !!l && l.state === "ready";
+
+/**
+ * Fetch a line once, on demand, and fold its rows into the same tables the main
+ * sheet uses — under prefixed IDs, so every helper on this page works on them
+ * unchanged while none of the main views can see them.
+ *
+ * A line that cannot be read is marked failed and forgotten about. The main
+ * tree is never affected by it, which is the whole reason the families are kept
+ * in separate spreadsheets in the first place.
+ */
+function ensureFamily(id){
+  const L = FAMILIES[id];
+  if(!L) return Promise.resolve(null);
+  if(!L.kept){ L.state = "unkept"; return Promise.resolve(L); }
+  if(L.promise) return L.promise;
+  L.state = "loading";
+  L.promise = (async () => {
+    try{
+      const got = await fetchTabs(L.sheetId, FAM_TABS.concat(["SETTINGS"]));
+      if(!got.PEOPLE || !got.PEOPLE.length) throw new Error("PEOPLE unreadable");
+      mergeFamily(L, got);
+      L.state = "ready";
+    }catch(e){
+      console.warn(`The ${L.title} line could not be read:`, e.message);
+      L.state = "failed";
+    }
+    return L;
+  })();
+  return L.promise;
+}
+
+const FAM_ID_FIELDS = ["PersonID","FatherID","MotherID","ParentID","Parent2ID","SpouseID","Person1ID","Person2ID"];
+
+function mergeFamily(L, got){
+  const tag = v => splitIds(v).map(x => L.id + ":" + x).join("; ");
+  FAM_TABS.forEach(tab => {
+    (got[tab]||[]).forEach(r => {
+      // Approval is enforced here as it is on the main sheet: anything not
+      // approved is dropped on arrival and never reaches the page.
+      const st = (r.ApprovalStatus||"").trim();
+      if(st && !/^approved$/i.test(st)) return;
+      const o = {...r};
+      FAM_ID_FIELDS.forEach(f => { if(o[f] !== undefined) o[f] = tag(o[f]); });
+      o._line = L.id;
+      (DB[tab] = DB[tab] || []).push(o);
+    });
+  });
+  L.settings = {};
+  (got.SETTINGS||[]).forEach(r => { if(r.Key) L.settings[r.Key.trim()] = (r.Value||"").trim(); });
+  // Their own root if they named one, otherwise the deepest-rooted person there.
+  buildIndex();
+  L.root = L.settings.root_person_id && P(L.id + ":" + L.settings.root_person_id)
+    ? L.id + ":" + L.settings.root_person_id : rootMost(L.id);
+  L.count = Object.keys(IX.byId).filter(x => famOf(x) === L.id).length;
+}
+
+/** Everyone in this archive proper — never anybody from a line that married in. */
+const mainPeople = () => Object.values(IX.byId).filter(p => inMain(p.PersonID));
+const mainRows = rows => (rows||[]).filter(r => !r._line);
+/** Everyone at or below this person, following every parent link, not only the line. */
+function throughSet(id){
+  const out=new Set(); const q=[id];
+  while(q.length){
+    const cur=q.shift();
+    allKids(cur).forEach(k => { if(!out.has(k)){ out.add(k); q.push(k); } });
+  }
+  return out;
+}
+
 /* ── settings ───────────────────────────────────────────────────────── */
 const SET = {};
 function readSettings(){
@@ -532,7 +676,24 @@ const PARENT_FIELDS = ["FatherID","MotherID","ParentID","Parent2ID"];
 /* The ID says it: P001 descends from the family, S001 married into it. That is
    the only thing that decides who appears in the tree, so there is no separate
    column to keep in step and no way for the two to disagree. */
-const inLine = id => /^P/i.test(String(id||"").trim());
+
+/* ── linked lines ─────────────────────────────────────────────────────
+   Everyone who marries in brings a whole family with them, and until now the
+   archive had nowhere to put it. A line is that family, kept in a spreadsheet
+   of its own so the people it belongs to can keep it themselves.
+
+   Their rows are loaded only when a page needs them, and every ID that arrives
+   is prefixed with the line's code — EKONGAMBANG:P001 — so two spreadsheets can
+   each have a P001 and never collide. The prefix is also the boundary: it is
+   what keeps a line out of the main tree, out of the counts, and out of the
+   branches, without a single one of those having to know that lines exist. */
+const localId = id => { const s=String(id||"").trim(); const i=s.indexOf(":"); return i>0 ? s.slice(i+1) : s; };
+const famOf  = id => { const s=String(id||"").trim(); const i=s.indexOf(":"); return i>0 ? s.slice(0,i)  : null; };
+const inMain  = id => !famOf(id);
+
+/* P or S is read from the ID a sheet actually wrote, not from the prefix put on
+   it here — so a line descends through its own P people exactly as this one does. */
+const inLine = id => /^P/i.test(localId(id));
 
 function buildIndex(){
   IX.byId={}; IX.kids={}; IX.allKids={}; IX.sub={}; IX.marriedTo={};
@@ -585,6 +746,13 @@ function sortSibs(ids){
 /* ── people helpers ─────────────────────────────────────────────────── */
 const P  = id => IX.byId[(id||"").trim()] || null;
 const name = p => (p && (p.DisplayName || p.FullName || p.PersonID)) || "Unknown";
+
+/* A title is not a field. It is part of the name and it is typed as part of the
+   name: Esinjo-Otoe Dr Eric John Bassey, Hon Engr Asim Bassey, Dr Nnyen. One or
+   several, traditional or professional, in whatever order the person is
+   actually addressed — none of which a column could have got right. FullName
+   holds all of it, and the search below finds a person by their title because
+   their title is in their name. */
 const kids    = id => IX.kids[(id||"").trim()] || [];      // the line, for the tree
 const allKids = id => IX.allKids[(id||"").trim()] || [];  // every child, for a profile
 
@@ -844,11 +1012,11 @@ function branchGroups(people){
 }
 
 function viewHome(){
-  const people = Object.values(IX.byId);
+  const people = mainPeople();
   const gens = people.map(p=>+p.Generation).filter(n=>!isNaN(n));
   const bg = branchGroups(people);
-  const photos = approved(DB.PHOTOS||[]).length;
-  const stories = approved(DB.STORIES||[]).length;
+  const photos = approved(mainRows(DB.PHOTOS)).length;
+  const stories = approved(mainRows(DB.STORIES)).length;
 
   app().innerHTML = `
   <div class="hero">
@@ -937,10 +1105,14 @@ function treeDepth(id){
 }
 
 function viewTree(params){
-  const people = Object.values(IX.byId);
-  if(!people.length){ app().innerHTML = `<p class="muted">No people recorded yet.</p>`; return; }
   const wanted = params.get("root") || TREE.root || setting("root_person_id","");
-  TREE.root = P(wanted) ? wanted : rootMost();
+  TREE.root = P(wanted) ? wanted : rootMost(null);
+  // A tree rooted inside a line shows only that line: its own people in the
+  // chooser, its own name over the top. The two archives never mix on screen.
+  const scope = famOf(TREE.root);
+  const L = scope ? FAMILIES[scope] : null;
+  const people = Object.values(IX.byId).filter(p => famOf(p.PersonID) === (scope || null));
+  if(!people.length){ app().innerHTML = `<p class="muted">No people recorded yet.</p>`; return; }
 
   // A big tree squeezed to fit becomes unreadable, so show the top few
   // generations by default and let people open the rest.
@@ -953,6 +1125,7 @@ function viewTree(params){
   if(TREE.appliedKey !== key){ TREE.collapsed = collapseBeyond(TREE.depth); TREE.appliedKey = key; }
 
   app().innerHTML = `
+    ${L ? familyBanner(L) : ""}
     <div class="treebar noprint">
       <label class="small muted" for="rootSel">Start from</label>
       <select id="rootSel">${people.slice().sort((a,b)=>(+a.Generation||99)-(+b.Generation||99) || name(a).localeCompare(name(b)))
@@ -1025,8 +1198,9 @@ function fitTree(){
   void sc.offsetWidth;                              // flush layout before re-arming the transition
   sc.style.transition="";
 }
-function rootMost(){
-  const people=Object.values(IX.byId);
+function rootMost(scope){
+  const people = Object.values(IX.byId).filter(p => famOf(p.PersonID) === (scope || null));
+  if(!people.length) return "";
   const roots = people.filter(p=>!lineParentsOf(p).length && inLine(p.PersonID));
   const pick = roots.sort((a,b)=>descendantSet(b.PersonID).size-descendantSet(a.PersonID).size)[0] || people[0];
   return pick.PersonID;
@@ -1219,15 +1393,29 @@ function viewPerson(id){
 
   const relSel = `<select id="meSel" style="margin-top:8px">
       <option value="">— choose a person —</option>
-      ${Object.values(IX.byId).filter(q=>q.PersonID!==id).map(q=>`<option value="${esc(q.PersonID)}" ${ME===q.PersonID?"selected":""}>${esc(name(q))}</option>`).join("")}
+      ${Object.values(IX.byId).filter(q=>q.PersonID!==id && famOf(q.PersonID)===famOf(id)).map(q=>`<option value="${esc(q.PersonID)}" ${ME===q.PersonID?"selected":""}>${esc(name(q))}</option>`).join("")}
     </select>`;
   const relOut = ME && P(ME) ? (() => {
       const r = relationshipTo(ME, id);
       return `<p style="margin:10px 0 0"><b>${esc(name(P(ME)))}</b> is ${r?`the <b>${esc(r)}</b> of`:"not connected by blood to"} <b>${esc(name(p))}</b>.</p>`;
     })() : "";
 
+  // Whoever the line belongs to gets the card. Everyone below them gets one
+  // sentence — that is what "only the people under them see it" means on a site
+  // with no way to log in: it is shown where it belongs, and nowhere else.
+  const own = familyFor(id);
+  if(own && (own.state === "idle" || own.state === "loading"))
+    ensureFamily(own.id).then(() => { if(location.hash === `#/person/${encodeURIComponent(id)}`) viewPerson(id); });
+  const joins = own ? [] : Object.values(FAMILIES).filter(L =>
+    L.personId !== id && throughSet(L.personId).has(id));
+
   const right = `
     ${section("Family", fam || `<p class="muted small">No relatives recorded yet.</p>`)}
+    ${own ? theirPeopleCard(own) : ""}
+    ${joins.length ? section("Where else this family comes from",
+      joins.map(L => { const w = P(L.personId); return `<p class="small muted" style="margin:0 0 10px">
+        Through ${w?`<a href="#/person/${encodeURIComponent(L.personId)}">${esc(name(w))}</a>`:"a marriage"},
+        ${esc(name(p))} also descends from <a href="#/family/${encodeURIComponent(L.id)}">${esc(L.title)}</a>${esc(kindClause(L))}.</p>`; }).join("")) : ""}
     ${marriedIn(p) ? "" : section("In the tree", `<dl class="dl">
       ${p.Generation?`<dt>Generation</dt><dd>${esc(p.Generation)}</dd>`:""}
       <dt>Descendants</dt><dd>${desc.size}</dd>
@@ -1292,7 +1480,7 @@ function lightbox(src, cap){
 
 /* ── browse ─────────────────────────────────────────────────────────── */
 function viewBrowse(){
-  const people = Object.values(IX.byId).filter(p=>!isPrivate(p));
+  const people = mainPeople().filter(p=>!isPrivate(p));
   const lines = branchGroups(people).groups;
   app().innerHTML = `
     <h1 style="margin-bottom:6px">Everyone on record</h1>
@@ -1342,7 +1530,7 @@ function viewSearch(params){
     const out=document.getElementById("sout");
     if(q.length<2){ out.innerHTML=`<p class="muted small">Type at least two letters.</p>`; return; }
     const hits=[];
-    Object.values(IX.byId).filter(p=>!isPrivate(p)).forEach(p=>{
+    mainPeople().filter(p=>!isPrivate(p)).forEach(p=>{
       const why=[];
       const nm=[name(p),p.FullName,p.Nickname,p.OtherNames].filter(Boolean).join(" ");
       if(nm.toLowerCase().includes(q)) why.push("name");
@@ -1372,9 +1560,109 @@ function viewSearch(params){
   run();
 }
 
+/* ── showing a line ─────────────────────────────────────────────────── */
+
+/** The standing header that says: you are not in the main archive now. */
+function familyBanner(L){
+  const who = P(L.personId);
+  return `<div class="card pad linebar" style="margin-bottom:16px">
+    <div class="small" style="letter-spacing:.08em; text-transform:uppercase; color:var(--accent-ink)">${esc(L.kind || "A family that married in")}</div>
+    <h2 style="margin:.2rem 0 .3rem">${esc(L.title)}</h2>
+    <p class="small muted" style="margin:0">${
+      who ? `Kept by ${esc(name(who))}’s people, in a record of their own. ` : ""
+    }${esc(L.note)}</p>
+    ${who ? `<p style="margin:12px 0 0"><a class="btn sm" href="#/person/${encodeURIComponent(L.personId)}">Back to ${esc(name(who))} in the ${esc(setting("site_title","family tree"))}</a></p>` : ""}
+  </div>`;
+}
+
+/**
+ * A person's own people — the card on the profile of whoever the line belongs
+ * to. Their parents and their brothers and sisters, from their family's sheet.
+ */
+function theirPeopleCard(L){
+  // The house itself, where no genealogy has been set down for it. Everything
+  // that is known goes on the page; nothing pretends there is more.
+  if(!L.kept)
+    return section(cardTitle(L), `
+      <p style="margin:0 0 4px; font-family:var(--serif); font-size:1.05rem">${esc(L.title)}</p>
+      ${L.kind ? `<p class="small" style="margin:0 0 8px; letter-spacing:.06em; text-transform:uppercase; color:var(--accent-ink)">${esc(L.kind)}</p>` : ""}
+      ${L.note ? `<p class="small muted" style="margin:0 0 10px">${esc(L.note)}</p>` : ""}
+      <p class="small muted" style="margin:0">Their own genealogy has not been set down anywhere yet.
+      When someone in that family keeps one, it can be joined here and this page will show it.</p>`);
+  if(L.state === "failed")
+    return section(cardTitle(L), `<p class="small muted" style="margin:0">Their family keeps this record in a spreadsheet of
+      their own, and it could not be read just now. Nothing else on this page depends on it.</p>`);
+  if(!familyReady(L))
+    return section(cardTitle(L), `<p class="small muted" style="margin:0">Fetching their family’s record…</p>`);
+
+  const them = P(L.id + ":" + L.theirId);
+  if(!them)
+    return section(cardTitle(L), `<p style="margin:0 0 4px; font-family:var(--serif); font-size:1.05rem">${esc(L.title)}</p>
+      <p class="small muted" style="margin:0">${L.count||0} people on record. Their own row has not been matched up yet — check TheirID in the FAMILIES tab.</p>
+      <p style="margin:12px 0 0"><a class="btn sm" href="#/family/${encodeURIComponent(L.id)}">Open their record</a></p>`);
+
+  const par = parentsOf(them), sib = siblings(them.PersonID);
+  return section(cardTitle(L), `
+    <p style="margin:0 0 4px; font-family:var(--serif); font-size:1.05rem">${esc(L.title)}</p>
+    ${L.kind ? `<p class="small" style="margin:0 0 8px; letter-spacing:.06em; text-transform:uppercase; color:var(--accent-ink)">${esc(L.kind)}</p>` : ""}
+    ${L.note ? `<p class="small muted" style="margin:0 0 12px">${esc(L.note)}</p>` : ""}
+    ${par.length ? kinBlock("Parents", par.map(x=>personChip(x)).join("")) : ""}
+    ${sib.length ? kinBlock("Brothers and sisters", sib.map(x=>personChip(x)).join("")) : ""}
+    ${!par.length && !sib.length ? `<p class="small muted" style="margin:0">Their record has been started but nobody has been added to it yet.</p>` : ""}
+    <p style="margin:14px 0 0"><a class="btn sm" href="#/family/${encodeURIComponent(L.id)}">See their whole record</a></p>`);
+}
+const kinBlock = (label, html) =>
+  `<div style="margin-bottom:14px"><div class="small muted" style="margin-bottom:7px">${label}</div>
+   <div class="plist">${html}</div></div>`;
+function cardTitle(L){
+  const p = P(L.personId);
+  const g = (p?.Gender||"").toUpperCase();
+  return g === "F" ? "Her people" : g === "M" ? "His people" : "Their people";
+}
+
+/** A line's own page: what it is, who is in it, and a way into its tree. */
+function viewFamily(id){
+  const L = FAMILIES[(id||"").toUpperCase()];
+  if(!L){ app().innerHTML = `<div class="card pad"><p class="muted">No such family.</p></div>`; return; }
+  if(!L.kept){
+    const w = P(L.personId);
+    app().innerHTML = `${familyBanner(L)}<div class="card pad">
+      <p class="muted" style="margin:0">Their own genealogy has not been set down anywhere yet.
+      ${w ? `What is on record here is the house itself, and that this family joins it through
+      <a href="#/person/${encodeURIComponent(L.personId)}">${esc(name(w))}</a>.` : ""}</p>
+      <p class="small muted" style="margin:12px 0 0">If someone in that family keeps a record of their own,
+      it can be joined to this one and their people will appear here.</p></div>`;
+    return;
+  }
+  if(L.state === "idle" || L.state === "loading"){
+    app().innerHTML = `${familyBanner(L)}<div class="card pad"><p class="muted">Fetching their family’s record…</p></div>`;
+    ensureFamily(L.id).then(() => { if(location.hash.startsWith("#/family/")) viewFamily(id); });
+    return;
+  }
+  if(L.state === "failed"){
+    app().innerHTML = `${familyBanner(L)}<div class="card pad"><p class="muted">Their record could not be read just now.
+      It is kept in a spreadsheet of their own, so nothing else in this archive is affected.</p></div>`;
+    return;
+  }
+  const people = Object.values(IX.byId).filter(p => famOf(p.PersonID) === L.id && !isPrivate(p));
+  const gens = {};
+  people.forEach(p => { const g = p.Generation || "—"; (gens[g] = gens[g] || []).push(p); });
+  const order = Object.keys(gens).sort((a,b)=>(+a||99)-(+b||99));
+
+  app().innerHTML = `
+    ${familyBanner(L)}
+    <p style="margin:0 0 18px; display:flex; gap:10px; flex-wrap:wrap">
+      ${L.root ? `<a class="btn primary" href="#/tree?root=${encodeURIComponent(L.root)}">Open their tree</a>` : ""}
+    ${L.kind ? "" : ""}
+    </p>
+    <p class="muted" style="margin-top:0">${people.length} ${people.length===1?"person":"people"} on record.</p>
+    ${order.map(g => `<h2 style="margin:22px 0 10px">${g==="—"?"Generation not set":"Generation "+esc(g)}</h2>
+      <div class="plist">${sortSibs(gens[g].map(p=>p.PersonID)).map(x=>personChip(x)).join("")}</div>`).join("")}`;
+}
+
 /* ── stories & gallery ──────────────────────────────────────────────── */
 function viewStories(){
-  const list = approved(DB.STORIES||[]).filter(s=>{ const p=P(s.PersonID); return !p || !isLimited(p); });
+  const list = approved(mainRows(DB.STORIES)).filter(s=>{ const p=P(s.PersonID); return !p || !isLimited(p); });
   app().innerHTML = `
     <h1 style="margin-bottom:6px">Stories &amp; oral history</h1>
     <p class="muted" style="margin-top:0">The part of the record that turns names into people.</p>
@@ -1395,7 +1683,7 @@ function viewStories(){
 }
 
 function viewGallery(){
-  const list = approved(DB.PHOTOS||[]).filter(f=>(f.DriveFileID||"").trim());
+  const list = approved(mainRows(DB.PHOTOS)).filter(f=>(f.DriveFileID||"").trim());
   app().innerHTML = `
     <h1 style="margin-bottom:6px">Family photographs</h1>
     <p class="muted" style="margin-top:0">${list.length} ${list.length===1?"photograph":"photographs"} in the family album.</p>
@@ -1716,7 +2004,7 @@ function offerNativeInstall(){
    it holds no secrets, only summaries of what is already published — so
    treat it as a convenience, not as a private page.                     */
 function viewAdmin(){
-  const people = Object.values(IX.byId);
+  const people = mainPeople();
   const yr = s => year(s);
   const has = (tab,id) => rowsFor(tab,id).length > 0;
 
@@ -1826,6 +2114,7 @@ function route(){
     case "tree": viewTree(params); break;
     case "person": viewPerson(decodeURIComponent(parts[1]||"")); break;
     case "browse": viewBrowse(); break;
+    case "family": viewFamily(decodeURIComponent(parts[1]||"")); break;
     case "search": viewSearch(params); break;
     case "stories": viewStories(); break;
     case "gallery": viewGallery(); break;
@@ -1886,6 +2175,7 @@ if(window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches)
   dropUnapproved();
   readSettings();
   buildIndex();
+  readFamilies();
   document.getElementById("brandText").textContent = setting("site_title","Odikom Family Tree");
   installManifest(setting("site_title",""));
   document.getElementById("footNote").textContent = setting("tagline","Build Once. Grow Forever.");
