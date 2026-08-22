@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="build" content="2026-08-22-1258">
+<meta name="build" content="2026-08-22-1619">
 <title>Odikom Family Tree</title>
 <meta name="description" content="A living record of the Odikom family — ancestry, relationships, places, professions and stories, preserved for the generations still to come.">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' fill='%233E5C4B'/%3E%3Cg fill='none' stroke='%23FBF8F3' stroke-width='1.9' stroke-linecap='round'%3E%3Cpath d='M12 21v-6'/%3E%3Cpath d='M12 15 7 11'/%3E%3Cpath d='m12 15 5-4'/%3E%3Cpath d='M12 7.2v3.3'/%3E%3C/g%3E%3Cg fill='%23FBF8F3'%3E%3Ccircle cx='12' cy='4.6' r='2.6'/%3E%3Ccircle cx='5.4' cy='10.4' r='2.4'/%3E%3Ccircle cx='18.6' cy='10.4' r='2.4'/%3E%3C/g%3E%3C/svg%3E">
@@ -562,11 +562,18 @@ function readFamilies(){
     if(!id || id.includes(":") || !who) return;
     if((r.Show||"Yes").trim() && !isYes(r.Show||"Yes")) return;
     if(FAMILIES[id]) return;                       // the newer tab wins
-    FAMILIES[id] = { id, personId: who, sheetId: sheet, kept: !!sheet,
+    // A family that keeps its own website is kept APART. Their address is
+    // shown and nothing else: this page never fetches their sheet, so their
+    // people are not here to be found, whoever has this address. Coming in
+    // through a marriage lets you see the marriage, and no further — which is
+    // as true of them looking in at us as of us looking in at them.
+    const site = (r.SiteURL||"").trim();
+    FAMILIES[id] = { id, personId: who, sheetId: sheet, site,
+                  kept: !!sheet && !site,
                   title: (r.Title||"").trim() || `${name(P(who)) || who}’s people`,
                   kind: (r.Kind||"").trim(),
                   theirId: (r.TheirID||"").trim(),
-                  note: (r.Note||"").trim(), state: "idle" };
+                  note: (r.Note||"").trim(), state: site ? "apart" : "idle" };
   });
 }
 /**
@@ -602,6 +609,7 @@ const familyReady = l => !!l && l.state === "ready";
 function ensureFamily(id){
   const L = FAMILIES[id];
   if(!L) return Promise.resolve(null);
+  if(L.site){ L.state = "apart"; return Promise.resolve(L); }   // nothing is fetched, ever
   if(!L.kept){ L.state = "unkept"; return Promise.resolve(L); }
   if(L.promise) return L.promise;
   L.state = "loading";
@@ -1580,6 +1588,17 @@ function familyBanner(L){
  * to. Their parents and their brothers and sisters, from their family's sheet.
  */
 function theirPeopleCard(L){
+  // Kept apart, at their own address. The marriage is shown, and the way out;
+  // their people are not here.
+  if(L.site)
+    return section(cardTitle(L), `
+      <p style="margin:0 0 4px; font-family:var(--serif); font-size:1.05rem">${esc(L.title)}</p>
+      ${L.kind ? `<p class="small" style="margin:0 0 8px; letter-spacing:.06em; text-transform:uppercase; color:var(--accent-ink)">${esc(L.kind)}</p>` : ""}
+      ${L.note ? `<p class="small muted" style="margin:0 0 12px">${esc(L.note)}</p>` : ""}
+      <p class="small muted" style="margin:0 0 12px">They keep their own record, separately from this
+      one. Their people are not held here.</p>
+      <a class="btn sm" href="${esc(L.site)}" target="_blank" rel="noopener">Open their archive</a>`);
+
   // The house itself, where no genealogy has been set down for it. Everything
   // that is known goes on the page; nothing pretends there is more.
   if(!L.kept)
@@ -1614,16 +1633,40 @@ function theirPeopleCard(L){
 const kinBlock = (label, html) =>
   `<div style="margin-bottom:14px"><div class="small muted" style="margin-bottom:7px">${label}</div>
    <div class="plist">${html}</div></div>`;
+/**
+ * Whose family this is, from where the reader is standing.
+ *
+ * Somebody who married in brings the family they came FROM: her people. But
+ * the same join read from the other archive is the family she married INTO,
+ * and calling that "her people" would be wrong. Which it is needs no column —
+ * it is the letter in her ID here. P: she was born into this one, so the
+ * attached family is her husband's. S: she married into this one, so the
+ * attached family is her own.
+ */
 function cardTitle(L){
   const p = P(L.personId);
   const g = (p?.Gender||"").toUpperCase();
-  return g === "F" ? "Her people" : g === "M" ? "His people" : "Their people";
+  const mine = !p || marriedIn(p);
+  if(mine) return g === "F" ? "Her people" : g === "M" ? "His people" : "Their people";
+  return g === "F" ? "Her husband’s people" : g === "M" ? "His wife’s people" : "The family they married into";
 }
 
 /** A line's own page: what it is, who is in it, and a way into its tree. */
 function viewFamily(id){
   const L = FAMILIES[(id||"").toUpperCase()];
   if(!L){ app().innerHTML = `<div class="card pad"><p class="muted">No such family.</p></div>`; return; }
+  if(L.site){
+    const w = P(L.personId);
+    app().innerHTML = `${familyBanner(L)}<div class="card pad">
+      <p class="muted" style="margin:0">They keep their own record, at their own address, separately
+      from this one.${w ? ` What is held here is the marriage — that this family joins theirs through
+      <a href="#/person/${encodeURIComponent(L.personId)}">${esc(name(w))}</a>.` : ""}</p>
+      <p class="small muted" style="margin:12px 0 0">Their people are not in this archive and cannot be
+      reached from it. That is deliberate: a marriage lets each family see the marriage, and no further.</p>
+      <p style="margin:16px 0 0"><a class="btn primary" href="${esc(L.site)}" target="_blank" rel="noopener">Open their archive</a></p>
+      </div>`;
+    return;
+  }
   if(!L.kept){
     const w = P(L.personId);
     app().innerHTML = `${familyBanner(L)}<div class="card pad">
